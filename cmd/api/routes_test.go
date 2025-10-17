@@ -329,7 +329,7 @@ func TestActivate(t *testing.T) {
 			case http.StatusCreated:
 				if w.Code != http.StatusCreated {
 					t.Errorf("Status code is incorrect, got %d, want %d", w.Code, http.StatusCreated)
-					t.Errorf(w.Body.String())
+					t.Errorf("%s", w.Body.String())
 					t.FailNow()
 				}
 
@@ -344,19 +344,19 @@ func TestActivate(t *testing.T) {
 			case http.StatusNotFound:
 				if w.Code != http.StatusNotFound {
 					t.Errorf("Status code is incorrect, got %d, want %d", w.Code, http.StatusNotFound)
-					t.Errorf(w.Body.String())
+					t.Errorf("%s", w.Body.String())
 					t.FailNow()
 				}
 			case http.StatusTemporaryRedirect:
 				if w.Code != http.StatusTemporaryRedirect {
 					t.Errorf("Status code is incorrect, got %d, want %d", w.Code, http.StatusTemporaryRedirect)
-					t.Errorf(w.Body.String())
+					t.Errorf("%s", w.Body.String())
 					t.FailNow()
 				}
 			case http.StatusUnauthorized:
 				if w.Code != http.StatusUnauthorized {
 					t.Errorf("Status code is incorrect, got %d, want %d", w.Code, http.StatusUnauthorized)
-					t.Errorf(w.Body.String())
+					t.Errorf("%s", w.Body.String())
 					t.FailNow()
 				}
 

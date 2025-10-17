@@ -138,7 +138,7 @@ func TestExtractHMAC(t *testing.T) {
 		_, err = j.Extract(ss)
 		if err != ErrInvalidToken {
 			t.Errorf("incorrect error, got %v, want %v", err, ErrInvalidToken)
-			t.Errorf(ss)
+			t.Errorf("%s", ss)
 			t.FailNow()
 		}
 	})
@@ -152,7 +152,7 @@ func TestExtractHMAC(t *testing.T) {
 		_, err = j.Extract(ss)
 		if err != ErrInvalidToken {
 			t.Errorf("incorrect error, got %v, want %v", err, ErrInvalidToken)
-			t.Errorf(ss)
+			t.Errorf("%s", ss)
 			t.FailNow()
 		}
 	})
