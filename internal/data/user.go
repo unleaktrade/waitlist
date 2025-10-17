@@ -15,7 +15,6 @@ type User struct {
 	Email     string `json:"email" binding:"required,email" validate:"required,email"`
 	UUID      string `json:"uuid,omitempty" validate:"required,uuid"`
 	Timestamp int64  `json:"timestamp,omitempty" validate:"gt=0"`
-	Type      string `json:"type" binding:"required,oneof=advisor agent initiator contributor investor mentor contractor" validate:"required,oneof=advisor agent initiator contributor investor mentor contractor"`
 	Sponsor   string `json:"sponsor" binding:"required,solana_addr" validate:"required,solana_addr"`
 }
 
@@ -39,11 +38,10 @@ func (u *User) Setup() {
 	u.Timestamp = time.Now().UnixMilli()
 }
 
-func NewUser(a, e, t, s string) *User {
+func NewUser(a, e, s string) *User {
 	u := &User{
 		Address: a,
 		Email:   e,
-		Type:    t,
 		Sponsor: s,
 	}
 	u.Setup()
