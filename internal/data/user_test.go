@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const sponsor = "0xE3C3691DB5f5185F37A3f98e5ec76403B2d10c3E" // trendev eth address
+const sponsor = "BDHCyVLMrJbPriFaopTzNFeHBqhtCQUUgnC3aBK5gNrq" // trendev eth address
 
 func TestSetup(t *testing.T) {
 
@@ -40,7 +40,8 @@ func TestNewUser(t *testing.T) {
 		value interface{}
 	}
 
-	validUser := NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doe@mailservice.com", "contractor", sponsor)
+	validAddress := "8mxgS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"
+	validUser := NewUser(validAddress, "john.doe@mailservice.com", "contractor", sponsor)
 
 	noUUIDUser := *validUser
 	noUUIDUser.UUID = ""
@@ -59,8 +60,8 @@ func TestNewUser(t *testing.T) {
 	}{
 		{"valid_user", validUser, nil, true, true},
 		{"invalid_user_address",
-			NewUser("0x8bz1f109551bD432803012645Ac136ddd64DBA73", "john.doe@mailservice.com", "contractor", sponsor),
-			&errorDetails{"Address", "eth_addr", "0x8bz1f109551bD432803012645Ac136ddd64DBA73"},
+			NewUser("9nagS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk", "john.doe@mailservice.com", "contractor", sponsor),
+			&errorDetails{"Address", "solana_addr", "9nagS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"},
 			false, false,
 		},
 		{"missing_user_address",
@@ -69,32 +70,32 @@ func TestNewUser(t *testing.T) {
 			false, false,
 		},
 		{"invalid_email",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doemailservice.com", "contractor", sponsor),
+			NewUser(validAddress, "john.doemailservice.com", "contractor", sponsor),
 			&errorDetails{"Email", "email", "john.doemailservice.com"},
 			false, false,
 		},
 		{"missing_email",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "", "contractor", sponsor),
+			NewUser(validAddress, "", "contractor", sponsor),
 			&errorDetails{"Email", "required", ""},
 			false, false,
 		},
 		{"invalid_sponsor",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doemail@service.com", "contractor", "0x8bz1f109551bD432803012645Ac136ddd64DBA73"),
-			&errorDetails{"Sponsor", "eth_addr", "0x8bz1f109551bD432803012645Ac136ddd64DBA73"},
+			NewUser(validAddress, "john.doemail@service.com", "contractor", "9nagS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"),
+			&errorDetails{"Sponsor", "solana_addr", "9nagS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"},
 			false, false,
 		},
 		{"missing_sponsor",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doemail@service.com", "contractor", ""),
+			NewUser(validAddress, "john.doemail@service.com", "contractor", ""),
 			&errorDetails{"Sponsor", "required", ""},
 			false, false,
 		},
 		{"missing_type",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doemail@service.com", "", sponsor),
+			NewUser(validAddress, "john.doemail@service.com", "", sponsor),
 			&errorDetails{"Type", "required", ""},
 			false, false,
 		},
 		{"invalid_type",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doemail@service.com", "unsupported_type", sponsor),
+			NewUser(validAddress, "john.doemail@service.com", "unsupported_type", sponsor),
 			&errorDetails{"Type", "oneof", "unsupported_type"},
 			false, false,
 		},
