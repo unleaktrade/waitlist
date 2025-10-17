@@ -46,7 +46,6 @@ func TestCreateHMAC(t *testing.T) {
 			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiIiwiZW1haWwiOiJqb2huLmRvZUBtYWlsc2VydmljZS5jb20iLCJ0eXBlIjoiY29udHJhY3RvciIsInNwb25zb3IiOiIiLCJpc3MiOiJwb2xuLm9yZyIsImV4cCI6MTY0ODU1MiwibmJmIjoxNjQ3OTUyLCJpYXQiOjE2NDc5NTJ9.760S9lnRV3Hp1aBKzB2KBUnHKUg8WJEr4R3cQCZoByc",
 			&data.User{
 				Email: email,
-				Type:  utype,
 			},
 			NewJWTHS256(secret),
 			nil,
@@ -75,24 +74,24 @@ func TestExtractHMAC(t *testing.T) {
 	now := time.Now()
 	ss, err := j.Create(u, now)
 	tt := []struct {
-		name                  string
-		jwt                   Token
-		ss                    string
-		address, email, utype string
-		err                   error
+		name           string
+		jwt            Token
+		ss             string
+		address, email string
+		err            error
 	}{
 		{
 			"valid token",
 			j,
 			ss,
-			address, email, utype,
+			address, email,
 			err,
 		},
 		{
 			"expired token",
 			j,
 			tokenHS256,
-			"", "", "",
+			"", "",
 			ErrInvalidToken,
 		},
 	}
@@ -113,10 +112,7 @@ func TestExtractHMAC(t *testing.T) {
 					t.Errorf("incorrect email, got %v, want %v", user.Email, tc.email)
 					t.FailNow()
 				}
-				if user.Type != tc.utype {
-					t.Errorf("incorrect type, got %v, want %v", user.Type, tc.utype)
-					t.FailNow()
-				}
+
 				if user.UUID == "" {
 					t.Errorf("UUID is incorrect, cannot be empty string")
 					t.FailNow()
@@ -132,7 +128,6 @@ func TestExtractHMAC(t *testing.T) {
 	t.Run("token without address", func(t *testing.T) {
 		ss, _ = j.Create(&data.User{
 			Email:   email,
-			Type:    utype,
 			Sponsor: sponsor,
 		}, now)
 		_, err = j.Extract(ss)
@@ -147,7 +142,6 @@ func TestExtractHMAC(t *testing.T) {
 		ss, _ = j.Create(&data.User{
 			Address: address,
 			Email:   email,
-			Type:    utype,
 		}, now)
 		_, err = j.Extract(ss)
 		if err != ErrInvalidToken {

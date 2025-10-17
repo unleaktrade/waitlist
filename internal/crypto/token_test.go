@@ -11,7 +11,6 @@ const (
 	address    = "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
 	sponsor    = "0xD01efFE216E16a85Fc529db66c26aBeCf4D885f8" // real address but empty balance
 	email      = "john.doe@mailservice.com"
-	utype      = "contractor"
 	timestamp  = 1647952128425
 	tokenHS256 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiMHg4YmExZjEwOTU1MWJENDMyODAzMDEyNjQ1QWMxMzZkZGQ2NERCQTcyIiwiZW1haWwiOiJqb2huLmRvZUBtYWlsc2VydmljZS5jb20iLCJ0eXBlIjoiY29udHJhY3RvciIsInNwb25zb3IiOiIweEQwMWVmRkUyMTZFMTZhODVGYzUyOWRiNjZjMjZhQmVDZjREODg1ZjgiLCJpc3MiOiJwb2xuLm9yZyIsImV4cCI6MTY0ODU1MiwibmJmIjoxNjQ3OTUyLCJpYXQiOjE2NDc5NTJ9.fcTXYvP9bAN934OjZnftZchCS6238J9TH9MkVT5c1sQ"
 	tokenHS512 = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiMHg4YmExZjEwOTU1MWJENDMyODAzMDEyNjQ1QWMxMzZkZGQ2NERCQTcyIiwiZW1haWwiOiJqb2huLmRvZUBtYWlsc2VydmljZS5jb20iLCJ0eXBlIjoiY29udHJhY3RvciIsInNwb25zb3IiOiIweEQwMWVmRkUyMTZFMTZhODVGYzUyOWRiNjZjMjZhQmVDZjREODg1ZjgiLCJpc3MiOiJwb2xuLm9yZyIsImV4cCI6MTY0ODU1MiwibmJmIjoxNjQ3OTUyLCJpYXQiOjE2NDc5NTJ9.fQqiz03S8DBEkoolEBFJ4eS09KBBdaTm7hSgiUUXeRUoptgxB279wU2sA4BtDDn8NieTyxxT-WZDECLEXTrkOA"
@@ -21,7 +20,6 @@ var (
 	u = &data.User{
 		Address: address,
 		Email:   email,
-		Type:    utype,
 		Sponsor: sponsor,
 	}
 )

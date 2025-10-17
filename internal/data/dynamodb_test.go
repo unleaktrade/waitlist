@@ -86,7 +86,7 @@ func TestNewDynamoDB(t *testing.T) {
 func TestSave(t *testing.T) {
 	db, _ := NewDynamoDB(tableName, ek)
 
-	u := NewUser(sponsor, "jsie@trendev.fr", "mentor", sponsor) // sponsor is first user and its own sponsor
+	u := NewUser(sponsor, "jsie@trendev.fr", sponsor) // sponsor is first user and its own sponsor
 	if err := db.Save(u); err != nil {
 		t.Errorf("impossible to save default sponsor: %v", err)
 		t.FailNow()
@@ -94,11 +94,9 @@ func TestSave(t *testing.T) {
 
 	address := "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
 	email := "john.doe@mailservice.com"
-	utype := "contractor"
 	u = &User{
 		Address: address,
 		Email:   email,
-		Type:    utype,
 		Sponsor: sponsor,
 	}
 
@@ -110,7 +108,6 @@ func TestSave(t *testing.T) {
 	u = &User{
 		Address: "",
 		Email:   email,
-		Type:    utype,
 		Sponsor: sponsor,
 	}
 	if err := db.Save(u); err == nil {
@@ -121,7 +118,6 @@ func TestSave(t *testing.T) {
 	u = &User{
 		Address: address,
 		Email:   email,
-		Type:    utype,
 		Sponsor: "",
 	}
 	if err := db.Save(u); err == nil {
@@ -166,8 +162,7 @@ func TestList(t *testing.T) {
 		for i, u := range users {
 			fmt.Printf("%0.2d - %s\n", i+1, u)
 			if u.Address == "0x8ba1f109551bD432803012645Ac136ddd64DBA72" &&
-				u.Email == "john.doe@mailservice.com" &&
-				u.Type == "contractor" {
+				u.Email == "john.doe@mailservice.com" {
 				johndoe = u
 			}
 		}

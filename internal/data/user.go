@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gagliardetto/solana-go"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -22,6 +23,11 @@ var validate = validator.New()
 
 func init() {
 	validate.RegisterValidation("solana_addr", validateSolanaAddress)
+
+	// Register with Gin's validator
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("solana_addr", validateSolanaAddress)
+	}
 }
 
 func validateSolanaAddress(fl validator.FieldLevel) bool {

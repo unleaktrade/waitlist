@@ -78,7 +78,7 @@ func extract[SM *jwt.SigningMethodHMAC | *jwt.SigningMethodECDSA](token string, 
 	})
 
 	if tk.Valid && uclaims.IsSet() {
-		return data.NewUser(uclaims.Address, uclaims.Email, uclaims.Type, uclaims.Sponsor), nil
+		return data.NewUser(uclaims.Address, uclaims.Email, uclaims.Sponsor), nil
 	}
 	//fmt.Printf("Error extracting JWT: %v\n", err)
 	err = ErrInvalidToken

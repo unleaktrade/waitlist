@@ -68,7 +68,7 @@ func (db *dynamoDB) Save(u *User) error {
 	if err != nil {
 		return err
 	}
-	u2 := NewUser(u.Address, encEmail, u.Type, u.Sponsor)
+	u2 := NewUser(u.Address, encEmail, u.Sponsor)
 	av, err := dynamodbattribute.MarshalMap(*u2)
 	if err != nil {
 		return err
@@ -118,7 +118,7 @@ func (db *dynamoDB) Count() (map[string]int, error) {
 			if err != nil {
 				return nil, err
 			}
-			m[user.Type]++
+			// TO DELETE: m[user.Type]++
 		}
 		// pagination
 		input.ExclusiveStartKey = result.LastEvaluatedKey

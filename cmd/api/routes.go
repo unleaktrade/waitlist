@@ -237,14 +237,14 @@ func (app *App) list(c *gin.Context) {
 	case "csv":
 		b := new(bytes.Buffer)
 		w := csv.NewWriter(b)
-		err := w.Write([]string{"address", "email", "uuid", "timestamp", "type", "sponsor"})
+		err := w.Write([]string{"address", "email", "uuid", "timestamp", "sponsor"})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		for _, u := range users {
 			l, _ := time.LoadLocation("Europe/Paris")
-			err := w.Write([]string{u.Address, u.Email, u.UUID, time.UnixMilli(u.Timestamp).In(l).String(), u.Type, u.Sponsor})
+			err := w.Write([]string{u.Address, u.Email, u.UUID, time.UnixMilli(u.Timestamp).In(l).String(), u.Sponsor})
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return

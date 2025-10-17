@@ -16,7 +16,7 @@ type DB interface {
 
 // MOCK
 var (
-	UsersMapMock = map[string]int{
+	usersMapMock = map[string]int{
 		"advisor":     1,
 		"agent":       5,
 		"initiator":   7,
@@ -29,7 +29,7 @@ var (
 )
 
 func init() {
-	for _, v := range UsersMapMock {
+	for _, v := range usersMapMock {
 		UsersCountMock += v
 	}
 }
@@ -43,18 +43,18 @@ func (db mockDB) Save(u *User) (err error) {
 }
 
 func (db mockDB) Count() (map[string]int, error) {
-	m := UsersMapMock
+	m := usersMapMock
 	return m, nil
 }
 
 func (db mockDB) List(options ...int) ([]*User, error) {
-	m := UsersMapMock
+	m := usersMapMock
 	users := []*User{}
 	for k, v := range m {
 		for i := 0; i < v; i++ {
 			_, a, _ := key.Generate() // user's address
 			_, s, _ := key.Generate() // user's sponsor
-			u := NewUser(a, fmt.Sprintf("%s_%d@domain.com", k, (i+1)), k, s)
+			u := NewUser(a, fmt.Sprintf("%s_%d@domain.com", k, (i+1)), s)
 			users = append(users, u)
 		}
 	}
