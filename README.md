@@ -1,28 +1,35 @@
-# preregister
-[![Test & Heroku Deployment](https://github.com/unleaktrade/waitlist/actions/workflows/test_heroku_deploy.yml/badge.svg)](https://github.com/unleaktrade/waitlist/actions/workflows/test_heroku_deploy.yml)
+# UnleakTrade - Waitlist Service
 
-[![codecov](https://codecov.io/gh/fairhive-labs/preregister/branch/main/graph/badge.svg?token=LNC6CEOAM6)](https://codecov.io/gh/fairhive-labs/preregister)
+A lightweight microservice that powers the waitlist registration system for [UnleakTrade](https://unleak.trade), a privacy-focused OTC/RFQ trading platform built on Solana.
 
-Microservice used during preregistration process
+## Overview
 
-### Preregister a User
-> curl -s -X POST https://polar-plains-98105.herokuapp.com/ -H 'content-type: application/json' -d '{ "email": "jsie@trendev.fr", "address":"0x8ba1f109551bD432803012645Ac136ddd64DBA72", "type":"mentor" }' | jq
+This microservice handles pre-registration during the waitlist phase of UnleakTrade, collecting and securely storing user information from early adopters interested in accessing the platform.
 
-or 
+### Features
 
-> curl -L -s --post301 -X POST http://preregister.poln.org -H 'content-type: application/json' -d '{ "email": "jsie@trendev.fr", "address":"0x8ba1f109551bD432803012645Ac136ddd64DBA72", "type":"mentor" }' | jq
+- Simple REST API for waitlist registration
+- Email and blockchain address validation
+- X/Twitter account (username)
+- Secure hash generation for each registration
+- Minimal dependencies and fast deployment
 
-Response :
+## About UnleakTrade
 
-```
-{
-  "hash": "2A0C454A589B1CA4BA7FEF07828DF8F8BFD13E894B086FAB19415B137D33A18901F223995D8737B81B8A3354419035F5A0BC8A7DC73B51A84383A4876A5DB3E5"
-}
-```
+UnleakTrade is a decentralized trading platform that enables private, secure OTC (Over-The-Counter) and RFQ (Request for Quote) transactions on the Solana blockchain. The platform leverages zero-knowledge proofs and blockchain technology to provide institutional-grade privacy for cryptocurrency trading.
 
-## Sequence Diagram
+Learn more at [unleak.trade](https://unleak.trade).
 
-Complete workflow is detailed on [GitBook](https://docs.poln.org/fairhive-archives/whitelist-pre-registration-workflow).
+## Documentation
 
-![Pre-registration_Workflow_v1 2](https://github.com/unleaktrade/waitlist/assets/139374260/f13e28ef-3398-43fe-a01b-fa3fe808d3ef)
+Complete workflow details and sequence diagrams will be available very soon.
 
+## Technology Stack
+
+- **Language**: Go (94.3%)
+- **Deployment**: Heroku
+- **License**: MIT
+
+## Contributing
+
+This repository is a fork of fairhive-labs/preregister, adapted for UnleakTrade's specific requirements.
