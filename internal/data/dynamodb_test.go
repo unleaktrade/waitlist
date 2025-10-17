@@ -92,7 +92,7 @@ func TestSave(t *testing.T) {
 		t.FailNow()
 	}
 
-	address := "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
+	address := "8mxgS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"
 	email := "john.doe@mailservice.com"
 	u = &User{
 		Address: address,
@@ -148,7 +148,7 @@ func TestList(t *testing.T) {
 		var johndoe *User
 		for i, u := range users {
 			fmt.Printf("%0.2d - %s\n", i+1, u)
-			if u.Address == "0x8ba1f109551bD432803012645Ac136ddd64DBA72" &&
+			if u.Address == "8mxgS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk" &&
 				u.Email == "john.doe@mailservice.com" {
 				johndoe = u
 			}
@@ -169,7 +169,7 @@ func TestList(t *testing.T) {
 		{10, 5, 5, nil},
 		{2, 3, 3, nil},
 		{0, -1, 0, ErrBadMax},
-		{0, 1000, 61, nil}, //  2023-05-13: 61 items in the test db
+		{0, 1000, 61, nil}, //  2025-10-17: 61 items in the test db
 	}
 
 	for _, tc := range tt {
@@ -188,7 +188,7 @@ func TestList(t *testing.T) {
 }
 
 func TestIsPresent(t *testing.T) {
-	address := "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
+	address := "8mxgS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"
 	db, _ := NewDynamoDB(tableName, ek)
 
 	tt := []struct {
