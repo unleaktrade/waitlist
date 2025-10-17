@@ -87,49 +87,6 @@ func (db *dynamoDB) Save(u *User) error {
 	return nil
 }
 
-func (db *dynamoDB) Count() (map[string]int, error) {
-	m := map[string]int{
-		"advisor":     0,
-		"agent":       0,
-		"contractor":  0,
-		"contributor": 0,
-		"initiator":   0,
-		"investor":    0,
-		"mentor":      0,
-	}
-	sess := session.Must(session.NewSession())
-	svc := dynamodb.New(sess)
-	if svc == nil {
-		return nil, errors.New("cannot create dynamodb client")
-	}
-
-	input := &dynamodb.ScanInput{
-		TableName: aws.String(db.tn),
-	}
-	for {
-		result, err := svc.Scan(input)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, u := range result.Items {
-			user := User{}
-			err = dynamodbattribute.UnmarshalMap(u, &user)
-			if err != nil {
-				return nil, err
-			}
-			// TO DELETE: m[user.Type]++
-		}
-		// pagination
-		input.ExclusiveStartKey = result.LastEvaluatedKey
-		if result.LastEvaluatedKey == nil {
-			break
-		}
-	}
-
-	return m, nil
-}
-
 func (db *dynamoDB) List(options ...int) ([]*User, error) {
 	users := []*User{}
 

@@ -126,19 +126,6 @@ func TestSave(t *testing.T) {
 	}
 }
 
-func TestCount(t *testing.T) {
-	db, _ := NewDynamoDB(tableName, ek)
-	mc, err := db.Count()
-	if err != nil {
-		t.Errorf("cannot count users: %v", err)
-		t.FailNow()
-	}
-	if mc["contractor"] == 0 {
-		t.Errorf("incorrect contractor count: must be greater than 0")
-		t.FailNow()
-	}
-}
-
 func TestList(t *testing.T) {
 	db, _ := NewDynamoDB(tableName, ek)
 	t.Run("no option", func(t *testing.T) {

@@ -9,7 +9,6 @@ import (
 
 type DB interface {
 	Save(u *User) error
-	Count() (map[string]int, error)
 	List(options ...int) ([]*User, error)
 	IsPresent(a string) (bool, error)
 }
@@ -40,11 +39,6 @@ type mockDB struct {
 func (db mockDB) Save(u *User) (err error) {
 	fmt.Printf("💾 User [ %v ] saved in DB\n", *u)
 	return
-}
-
-func (db mockDB) Count() (map[string]int, error) {
-	m := usersMapMock
-	return m, nil
 }
 
 func (db mockDB) List(options ...int) ([]*User, error) {
@@ -120,12 +114,6 @@ func (db mockErrDB) Save(u *User) (err error) {
 	m := fmt.Sprintf("🔥 Error saving User [ %v ] in DB\n", *u)
 	fmt.Print(m)
 	return errors.New(m)
-}
-
-func (db mockErrDB) Count() (map[string]int, error) {
-	m := "🔥 Error counting Users in DB"
-	fmt.Println(m)
-	return nil, errors.New(m)
 }
 
 func (db mockErrDB) List(options ...int) ([]*User, error) {
