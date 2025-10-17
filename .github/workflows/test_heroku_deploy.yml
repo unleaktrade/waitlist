@@ -1,13 +1,14 @@
 name: Test & Heroku Deployment
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  schedule: 
-    - cron: "0 6 * * 1" # Every Monday at 6:00am UTC 
+on: workflow_dispatch
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
+#   schedule: 
+#     - cron: "0 6 * * 1" # Every Monday at 6:00am UTC 
 jobs:
   test:
     env:
