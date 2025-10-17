@@ -1,4 +1,4 @@
-module github.com/fairhive-labs/preregister
+module github.com/unleaktrade/waitlist
 
 go 1.25
 

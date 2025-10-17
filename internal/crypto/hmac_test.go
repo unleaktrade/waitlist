@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fairhive-labs/preregister/internal/data"
+	"github.com/unleaktrade/waitlist/internal/data"
 )
 
 func TestNewJWTHS256(t *testing.T) {

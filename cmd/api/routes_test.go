@@ -12,11 +12,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fairhive-labs/preregister/internal/crypto"
-	"github.com/fairhive-labs/preregister/internal/crypto/cipher"
-	"github.com/fairhive-labs/preregister/internal/data"
-	"github.com/fairhive-labs/preregister/internal/limiter"
-	"github.com/fairhive-labs/preregister/internal/mailer"
+	"github.com/unleaktrade/waitlist/internal/crypto"
+	"github.com/unleaktrade/waitlist/internal/crypto/cipher"
+	"github.com/unleaktrade/waitlist/internal/data"
+	"github.com/unleaktrade/waitlist/internal/limiter"
+	"github.com/unleaktrade/waitlist/internal/mailer"
 )
 
 const sponsor = "0xD01efFE216E16a85Fc529db66c26aBeCf4D885f8" // real address but empty balance

@@ -1,5 +1,5 @@
 # preregister
-[![Test & Heroku Deployment](https://github.com/fairhive-labs/preregister/actions/workflows/test_heroku_deploy.yml/badge.svg)](https://github.com/fairhive-labs/preregister/actions/workflows/test_heroku_deploy.yml)
+[![Test & Heroku Deployment](https://github.com/unleaktrade/waitlist/actions/workflows/test_heroku_deploy.yml/badge.svg)](https://github.com/unleaktrade/waitlist/actions/workflows/test_heroku_deploy.yml)
 
 [![codecov](https://codecov.io/gh/fairhive-labs/preregister/branch/main/graph/badge.svg?token=LNC6CEOAM6)](https://codecov.io/gh/fairhive-labs/preregister)
 
@@ -24,5 +24,5 @@ Response :
 
 Complete workflow is detailed on [GitBook](https://docs.poln.org/fairhive-archives/whitelist-pre-registration-workflow).
 
-![Pre-registration_Workflow_v1 2](https://github.com/fairhive-labs/preregister/assets/139374260/f13e28ef-3398-43fe-a01b-fa3fe808d3ef)
+![Pre-registration_Workflow_v1 2](https://github.com/unleaktrade/waitlist/assets/139374260/f13e28ef-3398-43fe-a01b-fa3fe808d3ef)
 

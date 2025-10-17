@@ -12,8 +12,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/fairhive-labs/preregister/internal/data"
 	"github.com/gin-gonic/gin"
+	"github.com/unleaktrade/waitlist/internal/data"
 )
 
 //go:embed templates

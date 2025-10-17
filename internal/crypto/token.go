@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fairhive-labs/preregister/internal/data"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/unleaktrade/waitlist/internal/data"
 	"golang.org/x/crypto/sha3"
 )
 

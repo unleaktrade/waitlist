@@ -11,11 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/fairhive-labs/preregister/internal/crypto"
-	"github.com/fairhive-labs/preregister/internal/crypto/cipher"
-	"github.com/fairhive-labs/preregister/internal/data"
-	"github.com/fairhive-labs/preregister/internal/limiter"
-	"github.com/fairhive-labs/preregister/internal/mailer"
+	"github.com/unleaktrade/waitlist/internal/crypto"
+	"github.com/unleaktrade/waitlist/internal/crypto/cipher"
+	"github.com/unleaktrade/waitlist/internal/data"
+	"github.com/unleaktrade/waitlist/internal/limiter"
+	"github.com/unleaktrade/waitlist/internal/mailer"
 )
 
 type App struct {
