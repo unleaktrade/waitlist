@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	key "github.com/fairhive-labs/ethkeygen/pkg"
+	"github.com/gagliardetto/solana-go"
 )
 
 type DB interface {
@@ -16,13 +16,10 @@ type DB interface {
 // MOCK
 var (
 	usersMapMock = map[string]int{
-		"advisor":     1,
-		"agent":       5,
-		"initiator":   7,
-		"contributor": 0,
-		"investor":    10,
+		"trader":      100,
+		"contributor": 10,
+		"investor":    27,
 		"mentor":      5,
-		"contractor":  31,
 	}
 	UsersCountMock = 0
 )
@@ -46,8 +43,8 @@ func (db mockDB) List(options ...int) ([]*User, error) {
 	users := []*User{}
 	for k, v := range m {
 		for i := 0; i < v; i++ {
-			_, a, _ := key.Generate() // user's address
-			_, s, _ := key.Generate() // user's sponsor
+			a := solana.NewWallet().PublicKey().String() // user's address
+			s := solana.NewWallet().PublicKey().String() // user's sponsor
 			u := NewUser(a, fmt.Sprintf("%s_%d@domain.com", k, (i+1)), s)
 			users = append(users, u)
 		}
