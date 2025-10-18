@@ -16,13 +16,19 @@ const (
 	publicKey = `-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+xszAkYoKJP5CEvCaLuCGxAGDKIW
 ecgPQxYElRWn/183SnpMHDREfXa4/Jzadq8dmo4taNQucoOLjD7IaN5OcA==
------END PUBLIC KEY-----`
+-----END PUBLIC KEY-----` //use for debugging purposes only
 	privateKey = `-----BEGIN PRIVATE KEY-----
 MHcCAQEEIAwRtGkYqi732qh84HafnKE7YkW0CNpvvNseNGbxpsgGoAoGCCqGSM49
 AwEHoUQDQgAE+xszAkYoKJP5CEvCaLuCGxAGDKIWecgPQxYElRWn/183SnpMHDRE
 fXa4/Jzadq8dmo4taNQucoOLjD7IaN5OcA==
 -----END PRIVATE KEY-----`
-	token1 = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiMHg4YmExZjEwOTU1MWJENDMyODAzMDEyNjQ1QWMxMzZkZGQ2NERCQTcyIiwiZW1haWwiOiJqb2huLmRvZUBtYWlsc2VydmljZS5jb20iLCJ0eXBlIjoidGFsZW50IiwiaXNzIjoiZmFpcmhpdmUuaW8iLCJleHAiOjE2NDg1NTIsIm5iZiI6MTY0Nzk1MiwiaWF0IjoxNjQ3OTUyfQ.qk4RdhuwYDghwEtEkTS_3aoQF9zL9Cnb4Z0Pu7M6ALwJRZq-eCPGL-Q9_aP07oGszw8vcUZ82gw75CuX28oylQ"
+	privateKeyPKCS_8 = `-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgDBG0aRiqLvfaqHzg
+dp+coTtiRbQI2m+82x40ZvGmyAahRANCAAT7GzMCRigok/kIS8Jou4IbEAYMohZ5
+yA9DFgSVFaf/XzdKekwcNER9drj8nNp2rx2aji1o1C5yg4uMPsho3k5w
+-----END PRIVATE KEY-----` //use for debugging purposes only
+	token1          = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiM1ZmSHRzQktRa0tyN0gyakI2Q012cm5LZWt5SmpwTVpKQTVrYVBoUXdqSGgiLCJlbWFpbCI6ImpvaG4uZG9lQG1haWxzZXJ2aWNlLmNvbSIsInNwb25zb3IiOiJBa3Axb3lqWTFWWkdwc2Q4Z3dIQkNrQURlNTc3ZVZoQTRmOGRBU3hWVG0zcyIsImlzcyI6InVubGVhay50cmFkZSIsImV4cCI6MTY0ODU1MiwibmJmIjoxNjQ3OTUyLCJpYXQiOjE2NDc5NTJ9.xIA1DGpHhlrdhZloCTFVOn8Lbh-LaDuMB2h6gCui4CYWj29sfeS7TsNXiGOhHN8riaYQK5eBGckDM6zRRQ0nkQ"
+	validECDSAToken = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiM1ZmSHRzQktRa0tyN0gyakI2Q012cm5LZWt5SmpwTVpKQTVrYVBoUXdqSGgiLCJlbWFpbCI6ImpvaG4uZG9lQG1haWxzZXJ2aWNlLmNvbSIsInNwb25zb3IiOiJBa3Axb3lqWTFWWkdwc2Q4Z3dIQkNrQURlNTc3ZVZoQTRmOGRBU3hWVG0zcyIsImlzcyI6InVubGVhay50cmFkZSIsImV4cCI6MjczNDU3MTUwMCwibmJmIjoxNzM0NTY3OTAwLCJpYXQiOjE3MzQ1Njc5MDB9.W46OoJRJQWUKLDQUI6ZHkn0law97SYuoS3HWZhyogsdP0qjMJVrFIhj0C_bmLvjNZaj1_EN9AZ6IXptdTQaJaw"
 )
 
 func TestReadPrivateKey(t *testing.T) {
@@ -137,6 +143,23 @@ func TestExtractECDSA(t *testing.T) {
 	_, err = j.Extract(token1)
 	if !errors.Is(err, ErrInvalidToken) { // expired token
 		t.Errorf("incorrect error, err = %v, want %v", err, ErrInvalidToken)
+		t.FailNow()
+	}
+
+	user, err := j.Extract(validECDSAToken)
+
+	if user.Address != u.Address {
+		t.Errorf("incorrect address, got %s, want %s", user.Address, u.Address)
+		t.FailNow()
+	}
+
+	if user.Email != u.Email {
+		t.Errorf("incorrect email, got %s, want %s", user.Email, u.Email)
+		t.FailNow()
+	}
+
+	if user.Sponsor != u.Sponsor {
+		t.Errorf("incorrect sponsor, got %s, want %s", user.Sponsor, u.Sponsor)
 		t.FailNow()
 	}
 }
