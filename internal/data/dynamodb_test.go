@@ -169,7 +169,7 @@ func TestList(t *testing.T) {
 		{10, 5, 5, nil},
 		{2, 3, 3, nil},
 		{0, -1, 0, ErrBadMax},
-		{0, 1000, 61, nil}, //  2025-10-17: 61 items in the test db
+		{0, 1000, 56, nil}, //  2025-10-17: 56 items in the test db
 	}
 
 	for _, tc := range tt {
