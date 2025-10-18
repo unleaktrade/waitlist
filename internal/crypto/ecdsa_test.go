@@ -148,6 +148,11 @@ func TestExtractECDSA(t *testing.T) {
 
 	user, err := j.Extract(validECDSAToken)
 
+	if err != nil {
+		t.Errorf("error extracting ECDSA token: %v", err)
+		t.FailNow()
+	}
+
 	if user.Address != u.Address {
 		t.Errorf("incorrect address, got %s, want %s", user.Address, u.Address)
 		t.FailNow()
