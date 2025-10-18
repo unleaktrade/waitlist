@@ -86,19 +86,17 @@ func TestNewDynamoDB(t *testing.T) {
 func TestSave(t *testing.T) {
 	db, _ := NewDynamoDB(tableName, ek)
 
-	u := NewUser(sponsor, "jsie@trendev.fr", "mentor", sponsor) // sponsor is first user and its own sponsor
+	u := NewUser(sponsor, "jsie@trendev.fr", sponsor) // sponsor is first user and its own sponsor
 	if err := db.Save(u); err != nil {
 		t.Errorf("impossible to save default sponsor: %v", err)
 		t.FailNow()
 	}
 
-	address := "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
+	address := "8mxgS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"
 	email := "john.doe@mailservice.com"
-	utype := "contractor"
 	u = &User{
 		Address: address,
 		Email:   email,
-		Type:    utype,
 		Sponsor: sponsor,
 	}
 
@@ -110,7 +108,6 @@ func TestSave(t *testing.T) {
 	u = &User{
 		Address: "",
 		Email:   email,
-		Type:    utype,
 		Sponsor: sponsor,
 	}
 	if err := db.Save(u); err == nil {
@@ -121,24 +118,10 @@ func TestSave(t *testing.T) {
 	u = &User{
 		Address: address,
 		Email:   email,
-		Type:    utype,
 		Sponsor: "",
 	}
 	if err := db.Save(u); err == nil {
 		t.Errorf("impossible to save user with an empty string Sponsor: ValidationException")
-		t.FailNow()
-	}
-}
-
-func TestCount(t *testing.T) {
-	db, _ := NewDynamoDB(tableName, ek)
-	mc, err := db.Count()
-	if err != nil {
-		t.Errorf("cannot count users: %v", err)
-		t.FailNow()
-	}
-	if mc["contractor"] == 0 {
-		t.Errorf("incorrect contractor count: must be greater than 0")
 		t.FailNow()
 	}
 }
@@ -165,9 +148,8 @@ func TestList(t *testing.T) {
 		var johndoe *User
 		for i, u := range users {
 			fmt.Printf("%0.2d - %s\n", i+1, u)
-			if u.Address == "0x8ba1f109551bD432803012645Ac136ddd64DBA72" &&
-				u.Email == "john.doe@mailservice.com" &&
-				u.Type == "contractor" {
+			if u.Address == "8mxgS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk" &&
+				u.Email == "john.doe@mailservice.com" {
 				johndoe = u
 			}
 		}
@@ -187,7 +169,7 @@ func TestList(t *testing.T) {
 		{10, 5, 5, nil},
 		{2, 3, 3, nil},
 		{0, -1, 0, ErrBadMax},
-		{0, 1000, 61, nil}, //  2023-05-13: 61 items in the test db
+		{0, 1000, 56, nil}, //  2025-10-17: 56 items in the test db
 	}
 
 	for _, tc := range tt {
@@ -206,7 +188,7 @@ func TestList(t *testing.T) {
 }
 
 func TestIsPresent(t *testing.T) {
-	address := "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
+	address := "8mxgS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"
 	db, _ := NewDynamoDB(tableName, ek)
 
 	tt := []struct {

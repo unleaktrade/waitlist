@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const sponsor = "0xE3C3691DB5f5185F37A3f98e5ec76403B2d10c3E" // trendev eth address
+const sponsor = "BDHCyVLMrJbPriFaopTzNFeHBqhtCQUUgnC3aBK5gNrq"
 
 func TestSetup(t *testing.T) {
 
@@ -40,7 +40,8 @@ func TestNewUser(t *testing.T) {
 		value interface{}
 	}
 
-	validUser := NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doe@mailservice.com", "contractor", sponsor)
+	validAddress := "8mxgS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"
+	validUser := NewUser(validAddress, "john.doe@mailservice.com", sponsor)
 
 	noUUIDUser := *validUser
 	noUUIDUser.UUID = ""
@@ -59,43 +60,33 @@ func TestNewUser(t *testing.T) {
 	}{
 		{"valid_user", validUser, nil, true, true},
 		{"invalid_user_address",
-			NewUser("0x8bz1f109551bD432803012645Ac136ddd64DBA73", "john.doe@mailservice.com", "contractor", sponsor),
-			&errorDetails{"Address", "eth_addr", "0x8bz1f109551bD432803012645Ac136ddd64DBA73"},
+			NewUser("9nagS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk", "john.doe@mailservice.com", sponsor),
+			&errorDetails{"Address", "solana_addr", "9nagS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"},
 			false, false,
 		},
 		{"missing_user_address",
-			NewUser("", "john.doe@mailservice.com", "contractor", sponsor),
+			NewUser("", "john.doe@mailservice.com", sponsor),
 			&errorDetails{"Address", "required", ""},
 			false, false,
 		},
 		{"invalid_email",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doemailservice.com", "contractor", sponsor),
+			NewUser(validAddress, "john.doemailservice.com", sponsor),
 			&errorDetails{"Email", "email", "john.doemailservice.com"},
 			false, false,
 		},
 		{"missing_email",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "", "contractor", sponsor),
+			NewUser(validAddress, "", sponsor),
 			&errorDetails{"Email", "required", ""},
 			false, false,
 		},
 		{"invalid_sponsor",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doemail@service.com", "contractor", "0x8bz1f109551bD432803012645Ac136ddd64DBA73"),
-			&errorDetails{"Sponsor", "eth_addr", "0x8bz1f109551bD432803012645Ac136ddd64DBA73"},
+			NewUser(validAddress, "john.doemail@service.com", "9nagS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"),
+			&errorDetails{"Sponsor", "solana_addr", "9nagS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"},
 			false, false,
 		},
 		{"missing_sponsor",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doemail@service.com", "contractor", ""),
+			NewUser(validAddress, "john.doemail@service.com", ""),
 			&errorDetails{"Sponsor", "required", ""},
-			false, false,
-		},
-		{"missing_type",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doemail@service.com", "", sponsor),
-			&errorDetails{"Type", "required", ""},
-			false, false,
-		},
-		{"invalid_type",
-			NewUser("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doemail@service.com", "unsupported_type", sponsor),
-			&errorDetails{"Type", "oneof", "unsupported_type"},
 			false, false,
 		},
 		{"missing_uuid",
@@ -152,12 +143,11 @@ func TestNewUser(t *testing.T) {
 }
 
 func TestMarshalling(t *testing.T) {
-	address := "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
+	address := "HFcC6HuJzd7uGLMJ9YqTmLYLXbBwYn43JFCwExHEBw8r"
 	email := "john.doe@mailservice.com"
-	utype := "contractor"
-	u := NewUser(address, email, utype, sponsor)
+	u := NewUser(address, email, sponsor)
 	jsonUser, _ := json.Marshal(u)
-	n := 6
+	n := 5
 	m := make(map[string]interface{}, n)
 	if err := json.Unmarshal(jsonUser, &m); err != nil {
 		t.Errorf("Cannot unmarshal marshaled user: %v", err)
@@ -171,11 +161,10 @@ func TestMarshalling(t *testing.T) {
 	u = &User{
 		Address: address,
 		Email:   email,
-		Type:    utype,
 		Sponsor: sponsor,
 	}
 	jsonUser, _ = json.Marshal(u)
-	n = 4
+	n = 3
 	m = make(map[string]interface{}, n)
 	if err := json.Unmarshal(jsonUser, &m); err != nil {
 		t.Errorf("Cannot unmarshal marshaled user: %v", err)
@@ -188,12 +177,11 @@ func TestMarshalling(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
-	a1, a2 := "0xaD51c5ac7612DB8dD1611c6B2e317E4950c40942", "0x9C93c71065ea9101F252dE2e0f277437f473ac04"
+	a1, a2 := "0CWE15QhD8pQYhHshhKphoLAYNZxr5phFLNJnrmC6oFTy", "FZR973wQgXGTDg3TXDTAuuE1jNeSWgHCBZFYmF34gBTJ"
 	e1, e2 := "user1@domain.com", "user2@domain.com"
 	id1, id2 := "4a8e9808-563e-4761-a8fa-305fef099a3e", "942a5811-926d-4014-baff-ef707f38407e"
 	tm1, tm2 := 1683907220519, 1683807190432
-	ty1, ty2 := "contractor", "initiator"
-	s1, s2 := "0x095cb719f8f69952599c15af31c80Ccb825E15d4", "0x233F858EaF43AFFE5DDFBD3AD69ACc6f5de6C529"
+	s1, s2 := "B7oeZae4KhWnbrsBYczPvU2iWhVungSdEzTBKD6pfpHo", "B4RRVRTrPoE5PmPkoRG7L3Ae7EmWkqbC6D9Zf3fx4mGH"
 
 	tt := []struct {
 		name string
@@ -202,48 +190,48 @@ func TestString(t *testing.T) {
 	}{
 		{
 			"valid_user1",
-			&User{a1, e1, id1, int64(tm1), ty1, s1},
-			"{\"address\":\"0xaD51c5ac7612DB8dD1611c6B2e317E4950c40942\",\"email\":\"user1@domain.com\",\"uuid\":\"4a8e9808-563e-4761-a8fa-305fef099a3e\",\"type\":\"contractor\",\"sponsor\":\"0x095cb719f8f69952599c15af31c80Ccb825E15d4\",\"timestamp\":\"2023-05-12T18:00:20.519+02:00\"}",
+			&User{a1, e1, id1, int64(tm1), s1},
+			"{\"address\":\"0CWE15QhD8pQYhHshhKphoLAYNZxr5phFLNJnrmC6oFTy\",\"email\":\"user1@domain.com\",\"uuid\":\"4a8e9808-563e-4761-a8fa-305fef099a3e\",\"sponsor\":\"B7oeZae4KhWnbrsBYczPvU2iWhVungSdEzTBKD6pfpHo\",\"timestamp\":\"2023-05-12T18:00:20.519+02:00\"}",
 		},
 		{
 			"valid_user2",
-			&User{a2, e2, id2, int64(tm2), ty2, s2},
-			"{\"address\":\"0x9C93c71065ea9101F252dE2e0f277437f473ac04\",\"email\":\"user2@domain.com\",\"uuid\":\"942a5811-926d-4014-baff-ef707f38407e\",\"type\":\"initiator\",\"sponsor\":\"0x233F858EaF43AFFE5DDFBD3AD69ACc6f5de6C529\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
+			&User{a2, e2, id2, int64(tm2), s2},
+			"{\"address\":\"FZR973wQgXGTDg3TXDTAuuE1jNeSWgHCBZFYmF34gBTJ\",\"email\":\"user2@domain.com\",\"uuid\":\"942a5811-926d-4014-baff-ef707f38407e\",\"sponsor\":\"B4RRVRTrPoE5PmPkoRG7L3Ae7EmWkqbC6D9Zf3fx4mGH\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
 		},
 		{
 			"empty_address",
-			&User{"", e2, id2, int64(tm2), ty2, s2},
-			"{\"address\":\"\",\"email\":\"user2@domain.com\",\"uuid\":\"942a5811-926d-4014-baff-ef707f38407e\",\"type\":\"initiator\",\"sponsor\":\"0x233F858EaF43AFFE5DDFBD3AD69ACc6f5de6C529\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
+			&User{"", e2, id2, int64(tm2), s2},
+			"{\"address\":\"\",\"email\":\"user2@domain.com\",\"uuid\":\"942a5811-926d-4014-baff-ef707f38407e\",\"sponsor\":\"B4RRVRTrPoE5PmPkoRG7L3Ae7EmWkqbC6D9Zf3fx4mGH\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
 		},
 		{
 			"empty_address_empty_sponsor",
-			&User{"", e2, id2, int64(tm2), ty2, ""},
-			"{\"address\":\"\",\"email\":\"user2@domain.com\",\"uuid\":\"942a5811-926d-4014-baff-ef707f38407e\",\"type\":\"initiator\",\"sponsor\":\"\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
+			&User{"", e2, id2, int64(tm2), ""},
+			"{\"address\":\"\",\"email\":\"user2@domain.com\",\"uuid\":\"942a5811-926d-4014-baff-ef707f38407e\",\"sponsor\":\"\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
 		},
 		{
 			"no_email",
-			&User{a2, "", id2, int64(tm2), ty2, s2},
-			"{\"address\":\"0x9C93c71065ea9101F252dE2e0f277437f473ac04\",\"uuid\":\"942a5811-926d-4014-baff-ef707f38407e\",\"type\":\"initiator\",\"sponsor\":\"0x233F858EaF43AFFE5DDFBD3AD69ACc6f5de6C529\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
+			&User{a2, "", id2, int64(tm2), s2},
+			"{\"address\":\"FZR973wQgXGTDg3TXDTAuuE1jNeSWgHCBZFYmF34gBTJ\",\"uuid\":\"942a5811-926d-4014-baff-ef707f38407e\",\"sponsor\":\"B4RRVRTrPoE5PmPkoRG7L3Ae7EmWkqbC6D9Zf3fx4mGH\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
 		},
 		{
 			"no_uuid",
-			&User{a2, e2, "", int64(tm2), ty2, s2},
-			"{\"address\":\"0x9C93c71065ea9101F252dE2e0f277437f473ac04\",\"email\":\"user2@domain.com\",\"type\":\"initiator\",\"sponsor\":\"0x233F858EaF43AFFE5DDFBD3AD69ACc6f5de6C529\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
+			&User{a2, e2, "", int64(tm2), s2},
+			"{\"address\":\"FZR973wQgXGTDg3TXDTAuuE1jNeSWgHCBZFYmF34gBTJ\",\"email\":\"user2@domain.com\",\"sponsor\":\"B4RRVRTrPoE5PmPkoRG7L3Ae7EmWkqbC6D9Zf3fx4mGH\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
 		},
 		{
 			"no_uuid_no_type",
-			&User{a2, e2, "", int64(tm2), "", s2},
-			"{\"address\":\"0x9C93c71065ea9101F252dE2e0f277437f473ac04\",\"email\":\"user2@domain.com\",\"sponsor\":\"0x233F858EaF43AFFE5DDFBD3AD69ACc6f5de6C529\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
+			&User{a2, e2, "", int64(tm2), s2},
+			"{\"address\":\"FZR973wQgXGTDg3TXDTAuuE1jNeSWgHCBZFYmF34gBTJ\",\"email\":\"user2@domain.com\",\"sponsor\":\"B4RRVRTrPoE5PmPkoRG7L3Ae7EmWkqbC6D9Zf3fx4mGH\",\"timestamp\":\"2023-05-11T14:13:10.432+02:00\"}",
 		},
 		{
 			"epoch_T0_no_timestamp",
-			&User{a1, e1, id1, 0, ty1, s1},
-			"{\"address\":\"0xaD51c5ac7612DB8dD1611c6B2e317E4950c40942\",\"email\":\"user1@domain.com\",\"uuid\":\"4a8e9808-563e-4761-a8fa-305fef099a3e\",\"type\":\"contractor\",\"sponsor\":\"0x095cb719f8f69952599c15af31c80Ccb825E15d4\"}",
+			&User{a1, e1, id1, 0, s1},
+			"{\"address\":\"0CWE15QhD8pQYhHshhKphoLAYNZxr5phFLNJnrmC6oFTy\",\"email\":\"user1@domain.com\",\"uuid\":\"4a8e9808-563e-4761-a8fa-305fef099a3e\",\"sponsor\":\"B7oeZae4KhWnbrsBYczPvU2iWhVungSdEzTBKD6pfpHo\"}",
 		},
 		{
 			"epoch_T0",
-			&User{a1, e1, id1, 0, ty1, s1},
-			"{\"address\":\"0xaD51c5ac7612DB8dD1611c6B2e317E4950c40942\",\"email\":\"user1@domain.com\",\"uuid\":\"4a8e9808-563e-4761-a8fa-305fef099a3e\",\"type\":\"contractor\",\"sponsor\":\"0x095cb719f8f69952599c15af31c80Ccb825E15d4\",\"timestamp\":\"1970-01-01T00:00:00.000+00:00\"}",
+			&User{a1, e1, id1, 0, s1},
+			"{\"address\":\"0CWE15QhD8pQYhHshhKphoLAYNZxr5phFLNJnrmC6oFTy\",\"email\":\"user1@domain.com\",\"uuid\":\"4a8e9808-563e-4761-a8fa-305fef099a3e\",\"sponsor\":\"B7oeZae4KhWnbrsBYczPvU2iWhVungSdEzTBKD6pfpHo\",\"timestamp\":\"1970-01-01T00:00:00.000+00:00\"}",
 		},
 	}
 
@@ -268,7 +256,6 @@ func TestString(t *testing.T) {
 				Address: un.Address,
 				Email:   un.Email,
 				UUID:    un.UUID,
-				Type:    un.Type,
 				Sponsor: un.Sponsor,
 			}
 
@@ -290,10 +277,6 @@ func TestString(t *testing.T) {
 			}
 			if u.Timestamp != tc.u.Timestamp {
 				t.Errorf("Timestamp is incorrect, got %d, want %d", u.Timestamp, tc.u.Timestamp)
-				t.FailNow()
-			}
-			if u.Type != tc.u.Type {
-				t.Errorf("Type is incorrect, got %s, want %s", u.Type, tc.u.Type)
 				t.FailNow()
 			}
 			if u.Sponsor != tc.u.Sponsor {

@@ -6,10 +6,10 @@ import (
 
 func TestSetup(t *testing.T) {
 	tn, k, p1, p2 := "Waitlist_UnitTest", "Sup3rSecr3tKAY", "p4th1", "p4th2"
-	t.Setenv("FAIRHIVE_PREREGISTER_TABLE_NAME", tn)
-	t.Setenv("FAIRHIVE_ENCRYPTION_KEY", k)
-	t.Setenv("FAIRHIVE_API_SECURE_PATH1", p1)
-	t.Setenv("FAIRHIVE_API_SECURE_PATH2", p2)
+	t.Setenv("UNLEAKTRADE_PREREGISTER_TABLE_NAME", tn)
+	t.Setenv("UNLEAKTRADE_ENCRYPTION_KEY", k)
+	t.Setenv("UNLEAKTRADE_API_SECURE_PATH1", p1)
+	t.Setenv("UNLEAKTRADE_API_SECURE_PATH2", p2)
 
 	setup()
 	if tableName != tn {
@@ -33,10 +33,10 @@ func TestSetup(t *testing.T) {
 
 func TestNewApp(t *testing.T) {
 	tn, k, p1, p2 := "Waitlist_UnitTest", "Sup3rSecr3tKAY", "p4th1", "p4th2"
-	t.Setenv("FAIRHIVE_PREREGISTER_TABLE_NAME", tn)
-	t.Setenv("FAIRHIVE_ENCRYPTION_KEY", k)
-	t.Setenv("FAIRHIVE_API_SECURE_PATH1", p1)
-	t.Setenv("FAIRHIVE_API_SECURE_PATH2", p2)
+	t.Setenv("UNLEAKTRADE_PREREGISTER_TABLE_NAME", tn)
+	t.Setenv("UNLEAKTRADE_ENCRYPTION_KEY", k)
+	t.Setenv("UNLEAKTRADE_API_SECURE_PATH1", p1)
+	t.Setenv("UNLEAKTRADE_API_SECURE_PATH2", p2)
 	setup()
 	app := newApp()
 	if app == nil {

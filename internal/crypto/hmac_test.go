@@ -43,10 +43,10 @@ func TestCreateHMAC(t *testing.T) {
 		{
 			"HS256 user address missing",
 			time.UnixMicro(timestamp),
-			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiIiwiZW1haWwiOiJqb2huLmRvZUBtYWlsc2VydmljZS5jb20iLCJ0eXBlIjoiY29udHJhY3RvciIsInNwb25zb3IiOiIiLCJpc3MiOiJwb2xuLm9yZyIsImV4cCI6MTY0ODU1MiwibmJmIjoxNjQ3OTUyLCJpYXQiOjE2NDc5NTJ9.760S9lnRV3Hp1aBKzB2KBUnHKUg8WJEr4R3cQCZoByc",
+			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiIiwiZW1haWwiOiJqb2huLmRvZUBtYWlsc2VydmljZS5jb20iLCJzcG9uc29yIjoiQWtwMW95alkxVlpHcHNkOGd3SEJDa0FEZTU3N2VWaEE0ZjhkQVN4VlRtM3MiLCJpc3MiOiJ1bmxlYWsudHJhZGUiLCJleHAiOjE2NDg1NTIsIm5iZiI6MTY0Nzk1MiwiaWF0IjoxNjQ3OTUyfQ.f335Wjp-wJ5zUaj0lTsX2UzhXnKCHFnUhNU-ilAfGhA",
 			&data.User{
-				Email: email,
-				Type:  utype,
+				Email:   email,
+				Sponsor: sponsor,
 			},
 			NewJWTHS256(secret),
 			nil,
@@ -73,19 +73,19 @@ func TestCreateHMAC(t *testing.T) {
 func TestExtractHMAC(t *testing.T) {
 	j := NewJWTHS256(secret)
 	now := time.Now()
-	ss, err := j.Create(u, now)
+	token, err := j.Create(u, now)
 	tt := []struct {
-		name                  string
-		jwt                   Token
-		ss                    string
-		address, email, utype string
-		err                   error
+		name                    string
+		jwt                     Token
+		ss                      string
+		address, email, sponsor string
+		err                     error
 	}{
 		{
 			"valid token",
 			j,
-			ss,
-			address, email, utype,
+			token,
+			address, email, sponsor,
 			err,
 		},
 		{
@@ -113,10 +113,11 @@ func TestExtractHMAC(t *testing.T) {
 					t.Errorf("incorrect email, got %v, want %v", user.Email, tc.email)
 					t.FailNow()
 				}
-				if user.Type != tc.utype {
-					t.Errorf("incorrect type, got %v, want %v", user.Type, tc.utype)
+				if user.Sponsor != tc.sponsor {
+					t.Errorf("incorrect sponsor, got %v, want %v", user.Sponsor, tc.sponsor)
 					t.FailNow()
 				}
+
 				if user.UUID == "" {
 					t.Errorf("UUID is incorrect, cannot be empty string")
 					t.FailNow()
@@ -130,29 +131,27 @@ func TestExtractHMAC(t *testing.T) {
 	}
 
 	t.Run("token without address", func(t *testing.T) {
-		ss, _ = j.Create(&data.User{
+		token, _ = j.Create(&data.User{
 			Email:   email,
-			Type:    utype,
 			Sponsor: sponsor,
 		}, now)
-		_, err = j.Extract(ss)
+		_, err = j.Extract(token)
 		if err != ErrInvalidToken {
 			t.Errorf("incorrect error, got %v, want %v", err, ErrInvalidToken)
-			t.Errorf("%s", ss)
+			t.Errorf("%s", token)
 			t.FailNow()
 		}
 	})
 
 	t.Run("token without sponsor", func(t *testing.T) {
-		ss, _ = j.Create(&data.User{
+		token, _ = j.Create(&data.User{
 			Address: address,
 			Email:   email,
-			Type:    utype,
 		}, now)
-		_, err = j.Extract(ss)
+		_, err = j.Extract(token)
 		if err != ErrInvalidToken {
 			t.Errorf("incorrect error, got %v, want %v", err, ErrInvalidToken)
-			t.Errorf("%s", ss)
+			t.Errorf("%s", token)
 			t.FailNow()
 		}
 	})

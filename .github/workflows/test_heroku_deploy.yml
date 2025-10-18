@@ -15,11 +15,11 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      FAIRHIVE_API_SECURE_PATH1: "foo"
-      FAIRHIVE_API_SECURE_PATH2: "bar"
-      FAIRHIVE_ENCRYPTION_KEY: ${{ secrets.FAIRHIVE_ENCRYPTION_KEY }}
-      FAIRHIVE_GSUITE_PASSWORD: ${{ secrets.FAIRHIVE_GSUITE_PASSWORD }}
-      FAIRHIVE_GSUITE_USER: ${{ secrets.FAIRHIVE_GSUITE_USER }}
+      UNLEAKTRADE_API_SECURE_PATH1: "foo"
+      UNLEAKTRADE_API_SECURE_PATH2: "bar"
+      UNLEAKTRADE_ENCRYPTION_KEY: ${{ secrets.UNLEAKTRADE_ENCRYPTION_KEY }}
+      UNLEAKTRADE_GSUITE_PASSWORD: ${{ secrets.UNLEAKTRADE_GSUITE_PASSWORD }}
+      UNLEAKTRADE_GSUITE_USER: ${{ secrets.UNLEAKTRADE_GSUITE_USER }}
       MAILTRAP_PASSWORD: ${{ secrets.MAILTRAP_PASSWORD }}
       MAILTRAP_USER: ${{ secrets.MAILTRAP_USER }}
     strategy:
@@ -73,11 +73,11 @@ jobs:
           HD_AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
           HD_AWS_REGION: ${{ secrets.AWS_REGION }}
           HD_AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          HD_FAIRHIVE_API_SECURE_PATH1: ${{ secrets.FAIRHIVE_API_SECURE_PATH1 }}
-          HD_FAIRHIVE_API_SECURE_PATH2: ${{ secrets.FAIRHIVE_API_SECURE_PATH2 }}
-          HD_FAIRHIVE_ENCRYPTION_KEY: ${{ secrets.FAIRHIVE_ENCRYPTION_KEY }}
-          HD_FAIRHIVE_GSUITE_PASSWORD: ${{ secrets.FAIRHIVE_GSUITE_PASSWORD }}
-          HD_FAIRHIVE_GSUITE_USER: ${{ secrets.FAIRHIVE_GSUITE_USER }}
+          HD_UNLEAKTRADE_API_SECURE_PATH1: ${{ secrets.UNLEAKTRADE_API_SECURE_PATH1 }}
+          HD_UNLEAKTRADE_API_SECURE_PATH2: ${{ secrets.UNLEAKTRADE_API_SECURE_PATH2 }}
+          HD_UNLEAKTRADE_ENCRYPTION_KEY: ${{ secrets.UNLEAKTRADE_ENCRYPTION_KEY }}
+          HD_UNLEAKTRADE_GSUITE_PASSWORD: ${{ secrets.UNLEAKTRADE_GSUITE_PASSWORD }}
+          HD_UNLEAKTRADE_GSUITE_USER: ${{ secrets.UNLEAKTRADE_GSUITE_USER }}
           HD_MAILTRAP_PASSWORD: ${{ secrets.MAILTRAP_PASSWORD }}
           HD_MAILTRAP_USER: ${{ secrets.MAILTRAP_USER }}
           HD_GIN_MODE: release
@@ -87,6 +87,6 @@ jobs:
           SLACK_CHANNEL: _github
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Heroku Deployment - preregister/waitlist
-          SLACK_MESSAGE: "<http://poln.org/admin/${{ secrets.FAIRHIVE_API_SECURE_PATH1 }}/${{ secrets.FAIRHIVE_API_SECURE_PATH2 }}/users|Users details>"
-          SLACK_FOOTER: "<https://polar-plains-98105.herokuapp.com/${{ secrets.FAIRHIVE_API_SECURE_PATH1 }}/${{ secrets.FAIRHIVE_API_SECURE_PATH2 }}/list?mime=csv| Users list - CSV>"
+          SLACK_MESSAGE: "<http://poln.org/admin/${{ secrets.UNLEAKTRADE_API_SECURE_PATH1 }}/${{ secrets.UNLEAKTRADE_API_SECURE_PATH2 }}/users|Users details>"
+          SLACK_FOOTER: "<https://polar-plains-98105.herokuapp.com/${{ secrets.UNLEAKTRADE_API_SECURE_PATH1 }}/${{ secrets.UNLEAKTRADE_API_SECURE_PATH2 }}/list?mime=csv| Users list - CSV>"
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

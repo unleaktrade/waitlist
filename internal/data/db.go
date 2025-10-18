@@ -4,32 +4,28 @@ import (
 	"errors"
 	"fmt"
 
-	key "github.com/fairhive-labs/ethkeygen/pkg"
+	"github.com/gagliardetto/solana-go"
 )
 
 type DB interface {
 	Save(u *User) error
-	Count() (map[string]int, error)
 	List(options ...int) ([]*User, error)
 	IsPresent(a string) (bool, error)
 }
 
 // MOCK
 var (
-	UsersMapMock = map[string]int{
-		"advisor":     1,
-		"agent":       5,
-		"initiator":   7,
-		"contributor": 0,
-		"investor":    10,
+	usersMapMock = map[string]int{
+		"trader":      100,
+		"contributor": 10,
+		"investor":    27,
 		"mentor":      5,
-		"contractor":  31,
 	}
 	UsersCountMock = 0
 )
 
 func init() {
-	for _, v := range UsersMapMock {
+	for _, v := range usersMapMock {
 		UsersCountMock += v
 	}
 }
@@ -42,19 +38,14 @@ func (db mockDB) Save(u *User) (err error) {
 	return
 }
 
-func (db mockDB) Count() (map[string]int, error) {
-	m := UsersMapMock
-	return m, nil
-}
-
 func (db mockDB) List(options ...int) ([]*User, error) {
-	m := UsersMapMock
+	m := usersMapMock
 	users := []*User{}
 	for k, v := range m {
 		for i := 0; i < v; i++ {
-			_, a, _ := key.Generate() // user's address
-			_, s, _ := key.Generate() // user's sponsor
-			u := NewUser(a, fmt.Sprintf("%s_%d@domain.com", k, (i+1)), k, s)
+			a := solana.NewWallet().PublicKey().String() // user's address
+			s := solana.NewWallet().PublicKey().String() // user's sponsor
+			u := NewUser(a, fmt.Sprintf("%s_%d@domain.com", k, (i+1)), s)
 			users = append(users, u)
 		}
 	}
@@ -120,12 +111,6 @@ func (db mockErrDB) Save(u *User) (err error) {
 	m := fmt.Sprintf("🔥 Error saving User [ %v ] in DB\n", *u)
 	fmt.Print(m)
 	return errors.New(m)
-}
-
-func (db mockErrDB) Count() (map[string]int, error) {
-	m := "🔥 Error counting Users in DB"
-	fmt.Println(m)
-	return nil, errors.New(m)
 }
 
 func (db mockErrDB) List(options ...int) ([]*User, error) {

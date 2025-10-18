@@ -43,23 +43,23 @@ func setup() {
 	jwts["ES512"], _ = crypto.NewJWTES512()
 	log.Println("🔐 JWT Services: OK")
 
-	tn := os.Getenv("FAIRHIVE_PREREGISTER_TABLE_NAME")
+	tn := os.Getenv("UNLEAKTRADE_PREREGISTER_TABLE_NAME")
 	if tn != "" {
 		tableName = tn
 	}
 	log.Printf("💾 DynamoDB Table is %q\n", tableName)
 
-	ek = os.Getenv("FAIRHIVE_ENCRYPTION_KEY")
+	ek = os.Getenv("UNLEAKTRADE_ENCRYPTION_KEY")
 	if ek == "" {
 		panic("encryption key is missing")
 	}
 	log.Println("🔑 Encryption Key: OK")
 
-	secpath1 = os.Getenv("FAIRHIVE_API_SECURE_PATH1")
+	secpath1 = os.Getenv("UNLEAKTRADE_API_SECURE_PATH1")
 	if secpath1 == "" {
 		panic("secure path #1 must be set")
 	}
-	secpath2 = os.Getenv("FAIRHIVE_API_SECURE_PATH2")
+	secpath2 = os.Getenv("UNLEAKTRADE_API_SECURE_PATH2")
 	if secpath2 == "" {
 		panic("secure path #1 must be set")
 	}
@@ -73,7 +73,7 @@ func newApp() *App {
 	return &App{
 		db:       db,
 		jwt:      jwts["ES256"],
-		mailer:   mailer.New(os.Getenv("FAIRHIVE_GSUITE_USER"), os.Getenv("FAIRHIVE_GSUITE_PASSWORD"), "smtp.gmail.com", 587),
+		mailer:   mailer.New(os.Getenv("UNLEAKTRADE_GSUITE_USER"), os.Getenv("UNLEAKTRADE_GSUITE_PASSWORD"), "smtp.gmail.com", 587),
 		wg:       sync.WaitGroup{},
 		rl:       limiter.New(0.1, 10),
 		secpath1: secpath1,

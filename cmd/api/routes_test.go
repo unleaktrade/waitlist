@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -19,7 +18,7 @@ import (
 	"github.com/unleaktrade/waitlist/internal/mailer"
 )
 
-const sponsor = "0xD01efFE216E16a85Fc529db66c26aBeCf4D885f8" // real address but empty balance
+const sponsor = "9mf2bkJf5TebjCYQYq3WcK61ruHTs3bpeQwW2s6WWj3A"
 
 func TestRegister(t *testing.T) {
 	var db data.DB = data.MockDB
@@ -35,152 +34,82 @@ func TestRegister(t *testing.T) {
 	}
 	r := setupRouter(app)
 	tt := []struct {
-		name    string
-		address string
-		email   string
-		utype   string
-		status  int
-		err     string
+		name                    string
+		address, email, sponsor string
+		status                  int
+		err                     string
 	}{
-		{"valid contractor",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			"contractor",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid initiator",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			"initiator",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid agent",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			"agent",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid mentor",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			"mentor",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid advisor",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			"advisor",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid contributor",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			"contributor",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid investor",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			"investor",
+		{"valid user",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john.doe@mailservice.com", sponsor,
 			http.StatusAccepted,
 			"",
 		},
 		{"empty address",
 			"",
-			"john.doe@mailservice.com",
-			"contractor",
+			"john.doe@mailservice.com", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'required' tag"}`,
 		},
-		{"0x address",
-			"0x",
-			"john.doe@mailservice.com",
-			"contractor",
+		{"bullshit address",
+			"123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			"john.doe@mailservice.com", sponsor,
 			http.StatusBadRequest,
-			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'eth_addr' tag"}`,
-		},
-		{"0x0000 address",
-			"0x0000",
-			"john.doe@mailservice.com",
-			"contractor",
-			http.StatusBadRequest,
-			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'eth_addr' tag"}`,
-		},
-		{"non hexadecimal address",
-			"0xYZ25EF3F5B8A186998338A2ADA83795FBA2D695E",
-			"john.doe@mailservice.com",
-			"contractor",
-			http.StatusBadRequest,
-			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'eth_addr' tag"}`,
+			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'solana_addr' tag"}`,
 		},
 		{"too short address",
-			"0xDC25EF3F5B8A186998338A2ADA83795FBA2D69",
-			"john.doe@mailservice.com",
-			"contractor",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqV",
+			"john.doe@mailservice.com", sponsor,
 			http.StatusBadRequest,
-			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'eth_addr' tag"}`,
+			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'solana_addr' tag"}`,
 		},
 		{"too long address",
-			"0xDC25EF3F5B8A186998338A2ADA83795FBA2D695E5E5E5E",
-			"john.doe@mailservice.com",
-			"contractor",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVFEEEEEE",
+			"john.doe@mailservice.com", sponsor,
 			http.StatusBadRequest,
-			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'eth_addr' tag"}`,
+			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'solana_addr' tag"}`,
 		},
 		{"empty email",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"",
-			"contractor",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'required' tag"}`,
 		},
 		{"malformated email unsupported special characters",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john/doe@email_^me.fr",
-			"contractor",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john/doe@email_^me.fr", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'email' tag"}`,
 		},
 		{"malformated email no @",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe.email.fr",
-			"contractor",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john.doe.email.fr", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'email' tag"}`,
 		},
 		{"malformated email no user",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"@ovh.com",
-			"contractor",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"@ovh.com", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'email' tag"}`,
 		},
 		{"malformated email no domain",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@",
-			"contractor",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john.doe@", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'email' tag"}`,
 		},
-		{"empty type of user",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			"",
+		{"no sponsor address",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john.doe@mailservice.com", "",
 			http.StatusBadRequest,
-			`{"error":"Key: 'User.Type' Error:Field validation for 'Type' failed on the 'required' tag"}`,
+			`{"error":"Key: 'User.Sponsor' Error:Field validation for 'Sponsor' failed on the 'required' tag"}`,
 		},
-		{"unsupported type of user",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			"dev",
+		{"unvalid sponsor address",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john.doe@mailservice.com", "A0oL22pbncZFoaZNZaHJUTMexkxbjq1BmfCgJbjVmMge", // valid format but not a real Solana address (not on curve)
 			http.StatusBadRequest,
-			`{"error":"Key: 'User.Type' Error:Field validation for 'Type' failed on the 'oneof' tag"}`,
+			`{"error":"Key: 'User.Sponsor' Error:Field validation for 'Sponsor' failed on the 'solana_addr' tag"}`,
 		},
 	}
 
@@ -188,12 +117,11 @@ func TestRegister(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			address := tc.address
 			email := tc.email
-			utype := tc.utype
+			sponsor := tc.sponsor
 
 			jsonUser, _ := json.Marshal(data.User{
 				Address: address,
 				Email:   email,
-				Type:    utype,
 				Sponsor: sponsor,
 			})
 
@@ -258,11 +186,10 @@ func TestActivate(t *testing.T) {
 	}
 	r := setupRouter(app)
 
-	address, email, utype := "0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doe@mailservice.com", "contractor"
+	address, email := "5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF", "john.doe@mailservice.com"
 	vt, _ := app.jwt.Create(&data.User{
 		Address: address,
 		Email:   email,
-		Type:    utype,
 		Sponsor: sponsor}, time.Now())
 	vh := app.jwt.Hash(vt)
 
@@ -402,174 +329,6 @@ func TestActivate(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestCount(t *testing.T) {
-	var db data.DB = data.MockDB
-	k, _ := cipher.GenerateKey(32)
-	app := &App{
-		db,
-		crypto.NewJWTHS256(k),
-		&mailer.MockSmtpMailer,
-		sync.WaitGroup{},
-		limiter.NewUnlimited(),
-		"path1",
-		"path2",
-	}
-	r := setupRouter(app)
-
-	t.Run("json normal", func(t *testing.T) {
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s/count?mime=json", app.secpath1, app.secpath2), nil)
-		r.ServeHTTP(w, req)
-		if w.Code != http.StatusOK {
-			t.Errorf("incorrect status, got %d, want %d", w.Code, http.StatusOK)
-			t.FailNow()
-		}
-		if w.Body == nil {
-			t.Errorf("Response body cannot be nil")
-			t.FailNow()
-		}
-
-		var res struct {
-			Users map[string]int
-			Total int
-		}
-		err := json.NewDecoder(w.Body).Decode(&res)
-		if err != nil {
-			t.Errorf("Cannot decode response body %v, %v", w.Body, err)
-			t.FailNow()
-		}
-
-		for ut, uc := range data.UsersMapMock {
-			if res.Users[ut] != uc {
-				t.Errorf("incorrect %q count, got %d, want %d", ut, res.Users[ut], uc)
-				t.FailNow()
-			}
-		}
-
-		if res.Total != data.UsersCountMock {
-			t.Errorf("incorrect total count, got %d, want %d", res.Total, data.UsersCountMock)
-			t.FailNow()
-		}
-	})
-
-	t.Run("xml normal", func(t *testing.T) {
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s/count?mime=xml", app.secpath1, app.secpath2), nil)
-		r.ServeHTTP(w, req)
-		if w.Code != http.StatusOK {
-			t.Errorf("incorrect status, got %d, want %d", w.Code, http.StatusOK)
-			t.FailNow()
-		}
-		if w.Body == nil {
-			t.Errorf("Response body cannot be nil")
-			t.FailNow()
-		}
-
-		type xmlUser struct {
-			Type  string
-			Value int
-		}
-		type Count struct {
-			Total int
-			Users []xmlUser
-		}
-		var res Count
-		err := xml.NewDecoder(w.Body).Decode(&res)
-		if err != nil {
-			t.Errorf("Cannot decode response body %v, %v", w.Body, err)
-			t.FailNow()
-		}
-		if res.Total != data.UsersCountMock {
-			t.Errorf("incorrect total count, got %d, want %d", res.Total, data.UsersCountMock)
-			t.FailNow()
-		}
-		for _, xu := range res.Users {
-			if xu.Value != data.UsersMapMock[xu.Type] {
-				t.Errorf("incorrect agent count, got %d, want %d", xu.Value, data.UsersMapMock[xu.Type])
-				t.FailNow()
-			}
-		}
-	})
-
-	t.Run("html normal", func(t *testing.T) {
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s/count", app.secpath1, app.secpath2), nil)
-		r.ServeHTTP(w, req)
-		if w.Code != http.StatusOK {
-			t.Errorf("incorrect status, got %d, want %d", w.Code, http.StatusOK)
-			t.FailNow()
-		}
-		if w.Body == nil {
-			t.Errorf("Response body cannot be nil")
-			t.FailNow()
-		}
-
-		users := data.UsersMapMock
-		m := map[string]bool{
-			fmt.Sprintf(`<td colspan="2">Total: %d</td>`, data.UsersCountMock): false,
-		}
-		for t, v := range users {
-			k := fmt.Sprintf(`%s</td><td class="count">%d</td>`, t, v)
-			m[k] = false
-		}
-		for l, err := w.Body.ReadString('\n'); err == nil; {
-			for k := range m {
-				if strings.Contains(l, k) {
-					m[k] = true
-				}
-			}
-			l, err = w.Body.ReadString('\n')
-		}
-		for k, v := range m {
-			if !v {
-				t.Errorf("response body should contain %q", k)
-				t.FailNow()
-			}
-		}
-	})
-
-	tt := []struct {
-		name         string
-		path1, path2 string
-		status       int
-		body         string
-	}{
-		{"fakepath1", "fakepath1", app.secpath2, http.StatusNotFound, ""},
-		{"fakepath2", app.secpath1, "fakepath2", http.StatusNotFound, ""},
-		{"fakepaths", "fakepath1", "fakepath2", http.StatusNotFound, ""},
-		{"missing path1", "", "fakepath2", http.StatusNotFound, "404 page not found"},
-		{"missing path2", "fakepath1", "", http.StatusNotFound, ""},
-		{"no path", "", "", http.StatusNotFound, ""},
-	}
-	for _, tc := range tt {
-		t.Run("json_"+tc.name, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s/count?mime=json", tc.path1, tc.path2), nil)
-			r.ServeHTTP(w, req)
-			if w.Code != tc.status {
-				t.Errorf("incorrect status, got %d, want %d", w.Code, tc.status)
-				t.FailNow()
-			}
-			if w.Body.String() != tc.body {
-				t.Errorf("incorrect body, got %q, want %q", w.Body.String(), tc.body)
-				t.FailNow()
-			}
-		})
-	}
-
-	app.db = data.NewMockErrDB([]string{sponsor})
-	r = setupRouter(app)
-	t.Run("json faulty DB", func(t *testing.T) {
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s/count?mime=json", app.secpath1, app.secpath2), nil)
-		r.ServeHTTP(w, req)
-		if w.Code != http.StatusInternalServerError {
-			t.Errorf("Status code is incorrect, got %d, want %d", w.Code, http.StatusInternalServerError)
-			t.FailNow()
-		}
-	})
 }
 
 func TestHealth(t *testing.T) {

@@ -51,7 +51,7 @@ func create(user *data.User, t time.Time, m jwt.SigningMethod, k interface{}) (s
 			ExpiresAt: jwt.NewNumericDate(t.Add(10 * time.Minute)), // seconds
 			IssuedAt:  jwt.NewNumericDate(t),                       // seconds
 			NotBefore: jwt.NewNumericDate(t),                       // seconds
-			Issuer:    "poln.org",
+			Issuer:    "unleak.trade",
 		},
 	}
 	token := jwt.NewWithClaims(m, claims)
@@ -78,7 +78,7 @@ func extract[SM *jwt.SigningMethodHMAC | *jwt.SigningMethodECDSA](token string, 
 	})
 
 	if tk.Valid && uclaims.IsSet() {
-		return data.NewUser(uclaims.Address, uclaims.Email, uclaims.Type, uclaims.Sponsor), nil
+		return data.NewUser(uclaims.Address, uclaims.Email, uclaims.Sponsor), nil
 	}
 	//fmt.Printf("Error extracting JWT: %v\n", err)
 	err = ErrInvalidToken
