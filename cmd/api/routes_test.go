@@ -18,7 +18,7 @@ import (
 	"github.com/unleaktrade/waitlist/internal/mailer"
 )
 
-const sponsor = "0xD01efFE216E16a85Fc529db66c26aBeCf4D885f8"
+const sponsor = "9mf2bkJf5TebjCYQYq3WcK61ruHTs3bpeQwW2s6WWj3A"
 
 func TestRegister(t *testing.T) {
 	var db data.DB = data.MockDB
@@ -34,119 +34,82 @@ func TestRegister(t *testing.T) {
 	}
 	r := setupRouter(app)
 	tt := []struct {
-		name    string
-		address string
-		email   string
-		status  int
-		err     string
+		name                    string
+		address, email, sponsor string
+		status                  int
+		err                     string
 	}{
-		{"valid contractor",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid initiator",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid agent",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid mentor",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid advisor",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid contributor",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
-			http.StatusAccepted,
-			"",
-		},
-		{"valid investor",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@mailservice.com",
+		{"valid user",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john.doe@mailservice.com", sponsor,
 			http.StatusAccepted,
 			"",
 		},
 		{"empty address",
 			"",
-			"john.doe@mailservice.com",
+			"john.doe@mailservice.com", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'required' tag"}`,
 		},
-		{"0x address",
-			"0x",
-			"john.doe@mailservice.com",
+		{"bullshit address",
+			"123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			"john.doe@mailservice.com", sponsor,
 			http.StatusBadRequest,
-			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'eth_addr' tag"}`,
-		},
-		{"0x0000 address",
-			"0x0000",
-			"john.doe@mailservice.com",
-			http.StatusBadRequest,
-			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'eth_addr' tag"}`,
-		},
-		{"non hexadecimal address",
-			"0xYZ25EF3F5B8A186998338A2ADA83795FBA2D695E",
-			"john.doe@mailservice.com",
-			http.StatusBadRequest,
-			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'eth_addr' tag"}`,
+			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'solana_addr' tag"}`,
 		},
 		{"too short address",
-			"0xDC25EF3F5B8A186998338A2ADA83795FBA2D69",
-			"john.doe@mailservice.com",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqV",
+			"john.doe@mailservice.com", sponsor,
 			http.StatusBadRequest,
-			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'eth_addr' tag"}`,
+			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'solana_addr' tag"}`,
 		},
 		{"too long address",
-			"0xDC25EF3F5B8A186998338A2ADA83795FBA2D695E5E5E5E",
-			"john.doe@mailservice.com",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVFEEEEEE",
+			"john.doe@mailservice.com", sponsor,
 			http.StatusBadRequest,
-			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'eth_addr' tag"}`,
+			`{"error":"Key: 'User.Address' Error:Field validation for 'Address' failed on the 'solana_addr' tag"}`,
 		},
 		{"empty email",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'required' tag"}`,
 		},
 		{"malformated email unsupported special characters",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john/doe@email_^me.fr",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john/doe@email_^me.fr", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'email' tag"}`,
 		},
 		{"malformated email no @",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe.email.fr",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john.doe.email.fr", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'email' tag"}`,
 		},
 		{"malformated email no user",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"@ovh.com",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"@ovh.com", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'email' tag"}`,
 		},
 		{"malformated email no domain",
-			"0x8ba1f109551bD432803012645Ac136ddd64DBA72",
-			"john.doe@",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john.doe@", sponsor,
 			http.StatusBadRequest,
 			`{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'email' tag"}`,
+		},
+		{"no sponsor address",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john.doe@mailservice.com", "",
+			http.StatusBadRequest,
+			`{"error":"Key: 'User.Sponsor' Error:Field validation for 'Sponsor' failed on the 'required' tag"}`,
+		},
+		{"unvalid sponsor address",
+			"5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF",
+			"john.doe@mailservice.com", "A0oL22pbncZFoaZNZaHJUTMexkxbjq1BmfCgJbjVmMge", // valid format but not a real Solana address (not on curve)
+			http.StatusBadRequest,
+			`{"error":"Key: 'User.Sponsor' Error:Field validation for 'Sponsor' failed on the 'solana_addr' tag"}`,
 		},
 	}
 
@@ -154,6 +117,7 @@ func TestRegister(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			address := tc.address
 			email := tc.email
+			sponsor := tc.sponsor
 
 			jsonUser, _ := json.Marshal(data.User{
 				Address: address,
@@ -222,7 +186,7 @@ func TestActivate(t *testing.T) {
 	}
 	r := setupRouter(app)
 
-	address, email := "0x8ba1f109551bD432803012645Ac136ddd64DBA72", "john.doe@mailservice.com"
+	address, email := "5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF", "john.doe@mailservice.com"
 	vt, _ := app.jwt.Create(&data.User{
 		Address: address,
 		Email:   email,
