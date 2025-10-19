@@ -43,7 +43,7 @@ func setup() {
 	jwts["ES512"], _ = crypto.NewJWTES512()
 	log.Println("🔐 JWT Services: OK")
 
-	tn := os.Getenv("UNLEAKTRADE_PREREGISTER_TABLE_NAME")
+	tn := os.Getenv("UNLEAKTRADE_WAITLIST_TABLE_NAME")
 	if tn != "" {
 		tableName = tn
 	}
