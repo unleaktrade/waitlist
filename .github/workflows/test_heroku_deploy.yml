@@ -87,6 +87,6 @@ jobs:
           SLACK_CHANNEL: _github
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: Heroku Deployment - preregister/waitlist
-          SLACK_MESSAGE: "<http://poln.org/admin/${{ secrets.UNLEAKTRADE_API_SECURE_PATH1 }}/${{ secrets.UNLEAKTRADE_API_SECURE_PATH2 }}/users|Users details>"
-          SLACK_FOOTER: "<https://polar-plains-98105.herokuapp.com/${{ secrets.UNLEAKTRADE_API_SECURE_PATH1 }}/${{ secrets.UNLEAKTRADE_API_SECURE_PATH2 }}/list?mime=csv| Users list - CSV>"
+          SLACK_MESSAGE: "<https://unleaktrade-waitlist-028080d4039f.herokuapp.com/admin/${{ secrets.UNLEAKTRADE_API_SECURE_PATH1 }}/${{ secrets.UNLEAKTRADE_API_SECURE_PATH2 }}/users|Users details>"
+          SLACK_FOOTER: "<https://unleaktrade-waitlist-028080d4039f.herokuapp.com/${{ secrets.UNLEAKTRADE_API_SECURE_PATH1 }}/${{ secrets.UNLEAKTRADE_API_SECURE_PATH2 }}/list?mime=csv| Users list - CSV>"
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
