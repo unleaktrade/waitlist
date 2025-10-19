@@ -1,38 +1,194 @@
 {{define "emailActivation"}}
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width" />
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Complete Your Registration - UnleakTrade</title>
+    <!--[if mso]>
+    <style type="text/css">
+        body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
+    </style>
+    <![endif]-->
+    <style>
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+            .header {
+                padding: 30px 20px !important;
+            }
+            .content {
+                padding: 30px 20px !important;
+            }
+            .hash-box {
+                padding: 16px !important;
+                font-size: 11px !important;
+                word-break: break-all !important;
+            }
+            .cta-button {
+                padding: 16px 32px !important;
+                font-size: 15px !important;
+            }
+            .steps-box {
+                padding: 20px !important;
+            }
+            .brand-name {
+                font-size: 24px !important;
+            }
+        }
+        @media only screen and (min-width: 601px) {
+            .container {
+                max-width: 600px !important;
+            }
+        }
+    </style>
 </head>
-
-<body>
-    <div>
-        <span style="font-family: Arial, Helvetica, sans-serif; ">Hi there 🤗</span><br /><br />
-        <span style="font-family: Arial, Helvetica, sans-serif; ">Thanks for your preregistration 🙏</span><br />
-        <span style="font-family: Arial, Helvetica, sans-serif; ">We're super excited to have you on
-            board </span>
-        <span style="font-family: Arial, Helvetica, sans-serif; font-weight: bold;">but your
-            preregistration is not yet complete...</span><br /><br />
-        <span style="font-family: Arial, Helvetica, sans-serif; ">Please: </span>
-        <ol style="font-family: Arial, Helvetica, sans-serif; ">
-            <li><span>copy the hash code,</span></li>
-            <li><span>click on "Complete Preregistration" button,</span></li>
-            <li><span>paste it,</span></li>
-            <li><span>... and just activate your preregistration 🥳</span></li>
-        </ol>
-        <span style="font-family: Arial, Helvetica, sans-serif; ">⏳ You have less than 10 minutes...</span><br /><br />
-        <span style="font-family: Arial, Helvetica, sans-serif; font-weight: bolder;">hash code:</span><br />
-        <code>{{.Hash}}</code>
-    </div>
-
-    <p>
-        <a style="text-decoration: none; background-color: #ff914d; color: white; font-weight: bolder; padding: 4px;"
-            href="{{.Url}}">
-            <span style="font-family: Arial, Helvetica, sans-serif;">Complete Preregistration</span></a>
-    </p>
+<body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #000000; min-height: 100vh;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" class="container" cellspacing="0" cellpadding="0" border="0" style="width: 100%; max-width: 600px; background-color: #0a0a0a; border-radius: 12px; overflow: hidden;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td class="header" style="background-color: #000000; padding: 40px; text-align: center; border-bottom: 1px solid #1a1a1a;">
+                            <h1 class="brand-name" style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">
+                                <span style="color: #a0a0a0;">Unleak</span><span style="color: #ffffff;">Trade</span>
+                            </h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Main Content -->
+                    <tr>
+                        <td class="content" style="padding: 48px 40px;">
+                            
+                            <!-- Greeting -->
+                            <p style="margin: 0 0 24px 0; color: #ffffff; font-size: 18px; font-weight: 600; line-height: 1.4;">
+                                Thank you for your interest
+                            </p>
+                            
+                            <!-- Main Message -->
+                            <p style="margin: 0 0 16px 0; color: #a0a0a0; font-size: 15px; line-height: 1.6;">
+                                Your waitlist registration is almost complete.
+                            </p>
+                            
+                            <p style="margin: 0 0 32px 0; color: #a0a0a0; font-size: 15px; line-height: 1.6;">
+                                To secure your position on the exclusive UnleakTrade waitlist, please verify your email address using the activation code below.
+                            </p>
+                            
+                            <!-- Steps -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 32px 0;">
+                                <tr>
+                                    <td class="steps-box" style="background-color: #141414; border-left: 4px solid #00d9ff; border-radius: 8px; padding: 24px;">
+                                        <p style="margin: 0 0 16px 0; color: #ffffff; font-size: 14px; font-weight: 600; line-height: 1.4;">
+                                            Verification Process:
+                                        </p>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="color: #a0a0a0; font-size: 14px; line-height: 1.8; padding-bottom: 8px;">
+                                                    <span style="color: #00d9ff; font-weight: 600;">1.</span> Copy the activation code below
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color: #a0a0a0; font-size: 14px; line-height: 1.8; padding-bottom: 8px;">
+                                                    <span style="color: #00d9ff; font-weight: 600;">2.</span> Click "Complete Preregistration"
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color: #a0a0a0; font-size: 14px; line-height: 1.8; padding-bottom: 8px;">
+                                                    <span style="color: #00d9ff; font-weight: 600;">3.</span> Enter your activation code
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color: #a0a0a0; font-size: 14px; line-height: 1.8;">
+                                                    <span style="color: #00d9ff; font-weight: 600;">4.</span> Confirm your waitlist registration
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Timer Warning -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                                <tr>
+                                    <td style="background-color: #1a1510; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #2a2520;">
+                                        <p style="margin: 0; color: #ffd700; font-size: 14px; font-weight: 500; line-height: 1.4;">
+                                            This code expires in 10 minutes
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Activation Code -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 32px 0;">
+                                <tr>
+                                    <td>
+                                        <p style="margin: 0 0 12px 0; color: #ffffff; font-size: 13px; font-weight: 700; letter-spacing: 0.5px;">
+                                            Activation Code
+                                        </p>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                            <tr>
+                                                <td class="hash-box" style="background-color: #141414; border: 2px dashed #2a2a2a; border-radius: 8px; padding: 20px; word-wrap: break-word; word-break: break-word;">
+                                                    <code style="color: #00d9ff; font-family: 'Courier New', Courier, monospace; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; display: block;">{{.Hash}}</code>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- CTA Button -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 32px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td align="center" style="border-radius: 50px; background: linear-gradient(135deg, #8B5CF6 0%, #00d9ff 100%); box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);">
+                                                    <a href="{{.Url}}" class="cta-button" style="display: inline-block; color: #ffffff; text-decoration: none; padding: 18px 48px; font-weight: 600; font-size: 16px; line-height: 1.4;">
+                                                        Complete Preregistration
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Help Text -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td align="center">
+                                        <p style="margin: 0; color: #606060; font-size: 13px; line-height: 1.6;">
+                                            Need assistance? Contact <a href="mailto:support@unleak.trade" style="color: #00d9ff; text-decoration: none;">support@unleak.trade</a>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #000000; padding: 32px 40px; text-align: center; border-top: 1px solid #1a1a1a;">
+                            <p style="margin: 0 0 12px 0; color: #606060; font-size: 13px; line-height: 1.4;">
+                                © 2025 UnleakTrade. All rights reserved.
+                            </p>
+                            <p style="margin: 0; color: #404040; font-size: 12px; line-height: 1.5;">
+                                Confidential trading.<br>
+                                Institutional-grade fairness.<br>
+                                Now for you.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
-
 </html>
 {{end}}

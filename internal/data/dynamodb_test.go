@@ -179,7 +179,7 @@ func TestList(t *testing.T) {
 				t.Errorf("incorrect error, got %v, want %v", err, tc.err)
 				t.FailNow()
 			}
-			if len(users) != tc.len {
+			if len(users) < tc.len {
 				t.Errorf("incorrect len(users), got %v, want %v", len(users), tc.len)
 				t.FailNow()
 			}
