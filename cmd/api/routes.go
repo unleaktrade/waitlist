@@ -24,7 +24,10 @@ func setupRouter(app *App) *gin.Engine {
 	r.SetHTMLTemplate(t)
 	r.Use(app.cors, app.limit)
 	r.GET("/health", func(c *gin.Context) {
-		c.String(http.StatusOK, "ok")
+		// Minimal, standard JSON health shape
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+		})
 	})
 	r.GET("/:path1/:path2/list", app.list)
 	r.POST("/register", app.register)
@@ -135,7 +138,7 @@ func (app *App) cors(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 	c.Writer.Header().Set("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-	c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 
 	if c.Request.Method == "OPTIONS" {
 		c.AbortWithStatus(http.StatusNoContent)

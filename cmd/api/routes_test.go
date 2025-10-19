@@ -355,12 +355,12 @@ func TestHealth(t *testing.T) {
 	}
 
 	headers := w.Result().Header
-	if headers.Get("Access-Control-Allow-Methods") == "" {
-		t.Errorf("Access-Control-Allow-Methods header cannot be empty, must be %q\n", "POST, OPTIONS")
+	if methods := headers.Get("Access-Control-Allow-Methods"); methods == "" || methods != "GET, POST, OPTIONS" {
+		t.Errorf("Access-Control-Allow-Methods must be %q, got %q\n", "GET, POST, OPTIONS", methods)
 		t.FailNow()
 	}
-	if headers.Get("Content-Type") != "text/plain; charset=utf-8" {
-		t.Errorf("incorrect Content-Type, got %q, want %q\n", headers.Get("Content-Type"), "text/plain; charset=utf-8")
+	if headers.Get("Content-Type") != "application/json; charset=utf-8" {
+		t.Errorf("incorrect Content-Type, got %q, want %q\n", headers.Get("Content-Type"), "application/json; charset=utf-8")
 		t.FailNow()
 	}
 
@@ -369,8 +369,9 @@ func TestHealth(t *testing.T) {
 		t.FailNow()
 	}
 
-	if w.Body.String() != "ok" {
-		t.Errorf("incorrect body: must only contain %q", "ok")
+	want := `{"status":"ok"}`
+	if strings.TrimSpace(w.Body.String()) != want {
+		t.Errorf("incorrect body: got %q, want %q", w.Body.String(), want)
 		t.FailNow()
 	}
 }
