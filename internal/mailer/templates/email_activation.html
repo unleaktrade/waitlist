@@ -13,6 +13,64 @@
     </style>
     <![endif]-->
     <style>
+        /* image and layout stability */
+        img {
+            display: block;
+            border: 0;
+            line-height: 0;
+            max-width: 100%;
+        }
+
+        .container {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .header {
+            padding: 40px;
+            text-align: center;
+            border-bottom: 1px solid #1a1a1a;
+            min-height: 64px;
+        }
+
+        .brand-name {
+            display: inline-block;
+            margin: 0;
+            line-height: 1;
+            height: 40px;
+        }
+
+        .content {
+            padding: 48px 40px;
+            box-sizing: border-box;
+        }
+
+        .hash-box {
+            border: 2px solid #8B5CF6;
+            border-radius: 8px;
+            word-wrap: break-word;
+            word-break: break-word;
+            min-height: 64px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .cta-button {
+            display: inline-block;
+            border-radius: 50px;
+            padding: 18px 48px;
+            text-decoration: none;
+        }
+
+        /* ensure CTA container keeps its space even before fonts/images load */
+        .cta-wrapper {
+            display: inline-block;
+            min-width: 180px;
+            min-height: 48px;
+            box-sizing: border-box;
+        }
+
+        /* responsive adjustments you already had (kept) */
         @media only screen and (max-width: 600px) {
             .container {
                 width: 100% !important;
@@ -20,6 +78,7 @@
 
             .header {
                 padding: 30px 20px !important;
+                min-height: 56px;
             }
 
             .content {
@@ -30,6 +89,7 @@
                 padding: 16px !important;
                 font-size: 11px !important;
                 word-break: break-all !important;
+                min-height: 56px;
             }
 
             .cta-button {
@@ -43,6 +103,7 @@
 
             .brand-name {
                 font-size: 24px !important;
+                height: auto !important;
             }
         }
 
@@ -52,6 +113,7 @@
             }
         }
     </style>
+
 </head>
 
 <body
