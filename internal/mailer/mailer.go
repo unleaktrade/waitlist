@@ -54,7 +54,7 @@ func sendEmail(m *SmtpMailer, e, s, n string, data any) (err error) {
 To: %s
 Subject: %s
 %s
-`, "no_reply@fairhive-labs.com",
+`, "julien@unleak.trade",
 		e,
 		s,
 		headers)))
@@ -64,7 +64,7 @@ Subject: %s
 	fmt.Println("Sending email...")
 	r := 3
 	for i := 0; i < r; i++ {
-		err = smtp.SendMail(m.server, auth, m.from, to, body.Bytes())
+		err = smtp.SendMail(m.server, auth, "julien@unleak.trade", to, body.Bytes())
 		if nil == err {
 			break
 		}
