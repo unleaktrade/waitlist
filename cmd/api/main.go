@@ -73,7 +73,7 @@ func newApp() *App {
 	return &App{
 		db:       db,
 		jwt:      jwts["ES256"],
-		mailer:   mailer.New(os.Getenv("UNLEAKTRADE_GSUITE_USER"), os.Getenv("UNLEAKTRADE_GSUITE_PASSWORD"), "smtp.gmail.com", 587),
+		mailer:   mailer.New(os.Getenv("UNLEAKTRADE_MAIL_USER"), os.Getenv("UNLEAKTRADE_MAIL_PASSWORD"), "live.smtp.mailtrap.io", 587),
 		wg:       sync.WaitGroup{},
 		rl:       limiter.New(0.1, 10),
 		secpath1: secpath1,
