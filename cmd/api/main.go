@@ -67,7 +67,7 @@ func setup() {
 	}
 }
 
-func initCache(app *App) {
+func (app *App) initCache() {
 	// fill cache
 	users, err := app.db.List()
 	if err != nil {
@@ -103,7 +103,7 @@ func newApp() *App {
 func main() {
 	setup()
 	app := newApp()
-	initCache(app)
+	app.initCache()
 	r := setupRouter(app)
 
 	var addr string
