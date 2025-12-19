@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/unleaktrade/waitlist/internal/cache"
 	"github.com/unleaktrade/waitlist/internal/crypto"
 	"github.com/unleaktrade/waitlist/internal/crypto/cipher"
 	"github.com/unleaktrade/waitlist/internal/data"
@@ -31,6 +32,7 @@ func TestRegister(t *testing.T) {
 		limiter.NewUnlimited(),
 		"path1",
 		"path2",
+		cache.New(),
 	}
 	r := setupRouter(app)
 	tt := []struct {
@@ -183,6 +185,7 @@ func TestActivate(t *testing.T) {
 		limiter.NewUnlimited(),
 		"path1",
 		"path2",
+		cache.New(),
 	}
 	r := setupRouter(app)
 
@@ -342,6 +345,7 @@ func TestHealth(t *testing.T) {
 		limiter.NewUnlimited(),
 		"path1",
 		"path2",
+		cache.New(),
 	}
 	r := setupRouter(app)
 
@@ -387,6 +391,7 @@ func TestList(t *testing.T) {
 		limiter.NewUnlimited(),
 		"path1",
 		"path2",
+		cache.New(),
 	}
 	r := setupRouter(app)
 
