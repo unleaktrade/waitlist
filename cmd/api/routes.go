@@ -112,6 +112,9 @@ func (app *App) activate(c *gin.Context) {
 		return
 	}
 
+	// update cache
+	app.c.Add(u.Address, u.Timestamp)
+
 	app.wg.Add(1)
 	go func() {
 		defer app.wg.Done()
