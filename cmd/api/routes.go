@@ -32,6 +32,7 @@ func setupRouter(app *App) *gin.Engine {
 	r.GET("/:path1/:path2/list", app.list)
 	r.POST("/register", app.register)
 	r.POST("/activate/:token/:hash", app.activate)
+	r.GET("/control/:address", app.control)
 	return r
 }
 
@@ -68,6 +69,11 @@ func (app *App) register(c *gin.Context) {
 		r["token"] = token
 	}
 	c.JSON(http.StatusAccepted, r)
+}
+
+func (app *App) control(c *gin.Context) {
+	a := c.Param("address")
+	c.JSON(http.StatusOK, gin.H{"allowed": app.c.IsPresent(a)})
 }
 
 func (app *App) activate(c *gin.Context) {
