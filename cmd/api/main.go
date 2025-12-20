@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/unleaktrade/waitlist/internal/cache"
 	"github.com/unleaktrade/waitlist/internal/crypto"
 	"github.com/unleaktrade/waitlist/internal/crypto/cipher"
 	"github.com/unleaktrade/waitlist/internal/data"
@@ -25,6 +26,7 @@ type App struct {
 	wg                 sync.WaitGroup
 	rl                 *limiter.RateLimiter
 	secpath1, secpath2 string
+	c                  *cache.Cache
 }
 
 var (
@@ -65,11 +67,28 @@ func setup() {
 	}
 }
 
+func (app *App) initCache() {
+	// fill cache
+	users, err := app.db.List()
+	if err != nil {
+		panic("error loading users list from DB")
+	}
+	m := make(map[string]int64, len(users))
+	for _, u := range users {
+		m[u.Address] = u.Timestamp
+	}
+
+	c := cache.New()
+	c.Fill(m)
+	app.c = c
+}
+
 func newApp() *App {
 	db, err := data.NewDynamoDB(tableName, ek)
 	if err != nil {
 		panic(err)
 	}
+
 	return &App{
 		db:       db,
 		jwt:      jwts["ES256"],
@@ -84,6 +103,7 @@ func newApp() *App {
 func main() {
 	setup()
 	app := newApp()
+	app.initCache()
 	r := setupRouter(app)
 
 	var addr string
