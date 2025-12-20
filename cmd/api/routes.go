@@ -12,27 +12,50 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/unleaktrade/waitlist/internal/data"
 )
 
 //go:embed templates
 var tfs embed.FS
 
+//go:embed swagger/swagger.json
+var swaggerFS embed.FS
+
 func setupRouter(app *App) *gin.Engine {
 	r := gin.Default()
 	t := template.Must(template.ParseFS(tfs, "templates/*"))
 	r.SetHTMLTemplate(t)
-	r.Use(app.cors, app.limit)
-	r.GET("/health", func(c *gin.Context) {
+
+	r.GET("/openapi.json", func(c *gin.Context) {
+		b, err := swaggerFS.ReadFile("swagger/swagger.json")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "swagger spec not found"})
+			return
+		}
+		c.Data(http.StatusOK, "application/json; charset=utf-8", b)
+	})
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.URL("/openapi.json")))
+	r.GET("/doc", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+	})
+	r.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/doc")
+	})
+
+	api := r.Group("/")
+	api.Use(app.cors, app.limit, app.requireAPIKey)
+	api.GET("/health", func(c *gin.Context) {
 		// Minimal, standard JSON health shape
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",
 		})
 	})
-	r.GET("/:path1/:path2/list", app.list)
-	r.POST("/register", app.register)
-	r.POST("/activate/:token/:hash", app.activate)
-	r.GET("/check-wallet/:address", app.checkWallet)
+	api.GET("/:path1/:path2/list", app.list)
+	api.POST("/register", app.register)
+	api.POST("/activate/:token/:hash", app.activate)
+	api.GET("/check-wallet/:address", app.checkWallet)
 	return r
 }
 
@@ -78,6 +101,15 @@ func (app *App) checkWallet(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"registered": true})
+}
+
+func (app *App) requireAPIKey(c *gin.Context) {
+	k := c.GetHeader("UNLK-API-KEY")
+	if k == "" || k != app.apiKey {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	c.Next()
 }
 
 func (app *App) activate(c *gin.Context) {

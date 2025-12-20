@@ -19,7 +19,14 @@ import (
 	"github.com/unleaktrade/waitlist/internal/mailer"
 )
 
-const sponsor = "9mf2bkJf5TebjCYQYq3WcK61ruHTs3bpeQwW2s6WWj3A"
+const (
+	sponsor    = "9mf2bkJf5TebjCYQYq3WcK61ruHTs3bpeQwW2s6WWj3A"
+	testApiKey = "test-api-key"
+)
+
+func addAPIKey(req *http.Request) {
+	req.Header.Set("UNLK-API-KEY", testApiKey)
+}
 
 func TestRegister(t *testing.T) {
 	var db data.DB = data.MockDB
@@ -33,6 +40,7 @@ func TestRegister(t *testing.T) {
 		"path1",
 		"path2",
 		cache.New(),
+		testApiKey,
 	}
 	r := setupRouter(app)
 	tt := []struct {
@@ -129,6 +137,7 @@ func TestRegister(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonUser))
+			addAPIKey(req)
 			r.ServeHTTP(w, req)
 
 			switch tc.status {
@@ -186,6 +195,7 @@ func TestActivate(t *testing.T) {
 		"path1",
 		"path2",
 		cache.New(),
+		testApiKey,
 	}
 	r := setupRouter(app)
 
@@ -253,6 +263,7 @@ func TestActivate(t *testing.T) {
 			token := tc.token
 			hash := tc.hash
 			req, _ := http.NewRequest("POST", fmt.Sprintf("/activate/%s/%s", token, hash), nil)
+			addAPIKey(req)
 			r.ServeHTTP(w, req)
 
 			switch tc.status {
@@ -325,6 +336,7 @@ func TestActivate(t *testing.T) {
 			r := setupRouter(app)
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("POST", fmt.Sprintf("/activate/%s/%s", vt, vh), nil)
+			addAPIKey(req)
 			r.ServeHTTP(w, req)
 			if w.Code != tc.code {
 				t.Errorf("Status code is incorrect, got %d, want %d", w.Code, tc.code)
@@ -346,11 +358,13 @@ func TestHealth(t *testing.T) {
 		"path1",
 		"path2",
 		cache.New(),
+		testApiKey,
 	}
 	r := setupRouter(app)
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/health", nil)
+	addAPIKey(req)
 	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
@@ -380,6 +394,48 @@ func TestHealth(t *testing.T) {
 	}
 }
 
+func TestRequireAPIKey(t *testing.T) {
+	var db data.DB = data.MockDB
+	k, _ := cipher.GenerateKey(32)
+	app := &App{
+		db,
+		crypto.NewJWTHS256(k),
+		&mailer.MockSmtpMailer,
+		sync.WaitGroup{},
+		limiter.NewUnlimited(),
+		"path1",
+		"path2",
+		cache.New(),
+		testApiKey,
+	}
+	r := setupRouter(app)
+
+	tt := []struct {
+		name   string
+		key    string
+		status int
+	}{
+		{"authorized", testApiKey, http.StatusOK},
+		{"missing", "", http.StatusUnauthorized},
+		{"wrong", "wrong-key", http.StatusUnauthorized},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest("GET", "/health", nil)
+			if tc.key != "" {
+				req.Header.Set("UNLK-API-KEY", tc.key)
+			}
+			r.ServeHTTP(w, req)
+			if w.Code != tc.status {
+				t.Errorf("incorrect status, got %d, want %d", w.Code, tc.status)
+				t.FailNow()
+			}
+		})
+	}
+}
+
 func TestCheckWallet(t *testing.T) {
 	var db data.DB = data.MockDB
 	k, _ := cipher.GenerateKey(32)
@@ -392,6 +448,7 @@ func TestCheckWallet(t *testing.T) {
 		"path1",
 		"path2",
 		cache.New(),
+		testApiKey,
 	}
 	r := setupRouter(app)
 
@@ -413,6 +470,7 @@ func TestCheckWallet(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/check-wallet/%s", tc.address), nil)
+			addAPIKey(req)
 			r.ServeHTTP(w, req)
 
 			if w.Code != tc.status {
@@ -447,12 +505,14 @@ func TestList(t *testing.T) {
 		"path1",
 		"path2",
 		cache.New(),
+		testApiKey,
 	}
 	r := setupRouter(app)
 
 	t.Run("json normal", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s/list", app.secpath1, app.secpath2), nil)
+		addAPIKey(req)
 		r.ServeHTTP(w, req)
 		if w.Code != http.StatusOK {
 			t.Errorf("incorrect status, got %d, want %d", w.Code, http.StatusOK)
@@ -488,6 +548,7 @@ func TestList(t *testing.T) {
 	t.Run("csv", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s/list?mime=csv", app.secpath1, app.secpath2), nil)
+		addAPIKey(req)
 		r.ServeHTTP(w, req)
 		if w.Code != http.StatusOK {
 			t.Errorf("incorrect status, got %d, want %d", w.Code, http.StatusOK)
@@ -535,6 +596,7 @@ func TestList(t *testing.T) {
 		t.Run("json_"+tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s/list", tc.path1, tc.path2), nil)
+			addAPIKey(req)
 			r.ServeHTTP(w, req)
 			if w.Code != tc.status {
 				t.Errorf("incorrect status, got %d, want %d", w.Code, tc.status)
@@ -572,6 +634,7 @@ func TestList(t *testing.T) {
 		t.Run("json_"+tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s/list?offset=%s&max=%s", app.secpath1, app.secpath2, tc.offset, tc.max), nil)
+			addAPIKey(req)
 			r.ServeHTTP(w, req)
 			if w.Code != tc.status {
 				t.Errorf("incorrect status, got %d, want %d", w.Code, tc.status)
@@ -603,6 +666,7 @@ func TestList(t *testing.T) {
 	t.Run("json faulty DB", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s/list", app.secpath1, app.secpath2), nil)
+		addAPIKey(req)
 		r.ServeHTTP(w, req)
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("Status code is incorrect, got %d, want %d", w.Code, http.StatusInternalServerError)

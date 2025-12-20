@@ -27,6 +27,7 @@ type App struct {
 	rl                 *limiter.RateLimiter
 	secpath1, secpath2 string
 	c                  *cache.Cache
+	apiKey             string
 }
 
 var (
@@ -34,6 +35,7 @@ var (
 	tableName          = "Waitlist"
 	ek                 string
 	secpath1, secpath2 string
+	apiKey             string
 )
 
 func setup() {
@@ -64,6 +66,11 @@ func setup() {
 	secpath2 = os.Getenv("UNLEAKTRADE_API_SECURE_PATH2")
 	if secpath2 == "" {
 		panic("secure path #1 must be set")
+	}
+
+	apiKey = os.Getenv("UNLEAKTRADE_WAITLIST_API_KEY")
+	if apiKey == "" {
+		panic("waitlist api-key must be set")
 	}
 }
 
@@ -97,6 +104,7 @@ func newApp() *App {
 		rl:       limiter.New(0.1, 10),
 		secpath1: secpath1,
 		secpath2: secpath2,
+		apiKey:   apiKey,
 	}
 }
 

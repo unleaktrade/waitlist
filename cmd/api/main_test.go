@@ -5,11 +5,12 @@ import (
 )
 
 func TestSetup(t *testing.T) {
-	tn, k, p1, p2 := "Waitlist_UnitTest", "Sup3rSecr3tKAY", "p4th1", "p4th2"
+	tn, k, p1, p2, ak := "Waitlist_UnitTest", "Sup3rSecr3tKAY", "p4th1", "p4th2", "test-api-key"
 	t.Setenv("UNLEAKTRADE_WAITLIST_TABLE_NAME", tn)
 	t.Setenv("UNLEAKTRADE_ENCRYPTION_KEY", k)
 	t.Setenv("UNLEAKTRADE_API_SECURE_PATH1", p1)
 	t.Setenv("UNLEAKTRADE_API_SECURE_PATH2", p2)
+	t.Setenv("UNLEAKTRADE_WAITLIST_API_KEY", ak)
 
 	setup()
 	if tableName != tn {
@@ -28,15 +29,20 @@ func TestSetup(t *testing.T) {
 		t.Errorf("wrong secure path #2, got %s, want %s", secpath2, p2)
 		t.FailNow()
 	}
+	if apiKey != ak {
+		t.Errorf("wrong api key, got %s, want %s", apiKey, ak)
+		t.FailNow()
+	}
 
 }
 
 func TestNewApp(t *testing.T) {
-	tn, k, p1, p2 := "Waitlist_UnitTest", "Sup3rSecr3tKAY", "p4th1", "p4th2"
+	tn, k, p1, p2, ak := "Waitlist_UnitTest", "Sup3rSecr3tKAY", "p4th1", "p4th2", "test-api-key"
 	t.Setenv("UNLEAKTRADE_PREREGISTER_TABLE_NAME", tn)
 	t.Setenv("UNLEAKTRADE_ENCRYPTION_KEY", k)
 	t.Setenv("UNLEAKTRADE_API_SECURE_PATH1", p1)
 	t.Setenv("UNLEAKTRADE_API_SECURE_PATH2", p2)
+	t.Setenv("UNLEAKTRADE_WAITLIST_API_KEY", ak)
 	setup()
 	app := newApp()
 	if app == nil {
