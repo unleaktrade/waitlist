@@ -22,7 +22,7 @@ func setupRouter(app *App) *gin.Engine {
 	r := gin.Default()
 	t := template.Must(template.ParseFS(tfs, "templates/*"))
 	r.SetHTMLTemplate(t)
-	r.Use(app.cors, app.limit)
+	r.Use(app.cors, app.limit, app.requireAPIKey)
 	r.GET("/health", func(c *gin.Context) {
 		// Minimal, standard JSON health shape
 		c.JSON(http.StatusOK, gin.H{
@@ -78,6 +78,15 @@ func (app *App) checkWallet(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"registered": true})
+}
+
+func (app *App) requireAPIKey(c *gin.Context) {
+	k := c.GetHeader("UNLK-API-KEY")
+	if k == "" || k != app.apiKey {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	c.Next()
 }
 
 func (app *App) activate(c *gin.Context) {
