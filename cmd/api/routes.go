@@ -37,6 +37,12 @@ func setupRouter(app *App) *gin.Engine {
 		c.Data(http.StatusOK, "application/json; charset=utf-8", b)
 	})
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.URL("/openapi.json")))
+	r.GET("/doc", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+	})
+	r.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/doc")
+	})
 
 	api := r.Group("/")
 	api.Use(app.cors, app.limit, app.requireAPIKey)
