@@ -415,6 +415,7 @@ func TestRequireAPIKey(t *testing.T) {
 		key    string
 		status int
 	}{
+		{"authorized", testApiKey, http.StatusOK},
 		{"missing", "", http.StatusUnauthorized},
 		{"wrong", "wrong-key", http.StatusUnauthorized},
 	}
