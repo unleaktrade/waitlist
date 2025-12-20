@@ -380,6 +380,61 @@ func TestHealth(t *testing.T) {
 	}
 }
 
+func TestCheckWallet(t *testing.T) {
+	var db data.DB = data.MockDB
+	k, _ := cipher.GenerateKey(32)
+	app := &App{
+		db,
+		crypto.NewJWTHS256(k),
+		&mailer.MockSmtpMailer,
+		sync.WaitGroup{},
+		limiter.NewUnlimited(),
+		"path1",
+		"path2",
+		cache.New(),
+	}
+	r := setupRouter(app)
+
+	presentAddress := "Ggw2mrnWemEpJLYmGxBbMarEYsYTeQkToZcLVWsvk5Qg"
+	missingAddress := "44DFptZSiuQSJBF9LemyMcqz6jei5EiVzkX7cdGxFW15"
+	app.c.Add(presentAddress, time.Now().UnixMilli())
+
+	tt := []struct {
+		name    string
+		address string
+		status  int
+		want    bool
+	}{
+		{"present", presentAddress, http.StatusOK, true},
+		{"missing", missingAddress, http.StatusNotFound, false},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/check-wallet/%s", tc.address), nil)
+			r.ServeHTTP(w, req)
+
+			if w.Code != tc.status {
+				t.Errorf("incorrect status, got %d, want %d", w.Code, tc.status)
+				t.FailNow()
+			}
+
+			var res struct {
+				Registered bool `json:"registered"`
+			}
+			if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+				t.Errorf("Cannot decode response body %v, %v", w.Body, err)
+				t.FailNow()
+			}
+			if res.Registered != tc.want {
+				t.Errorf("registered is incorrect, got %v, want %v", res.Registered, tc.want)
+				t.FailNow()
+			}
+		})
+	}
+}
+
 func TestList(t *testing.T) {
 	var db data.DB = data.MockDB
 	k, _ := cipher.GenerateKey(32)

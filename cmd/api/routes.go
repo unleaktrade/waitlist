@@ -32,7 +32,7 @@ func setupRouter(app *App) *gin.Engine {
 	r.GET("/:path1/:path2/list", app.list)
 	r.POST("/register", app.register)
 	r.POST("/activate/:token/:hash", app.activate)
-	r.GET("/control/:address", app.control)
+	r.GET("/check-wallet/:address", app.checkWallet)
 	return r
 }
 
@@ -71,9 +71,13 @@ func (app *App) register(c *gin.Context) {
 	c.JSON(http.StatusAccepted, r)
 }
 
-func (app *App) control(c *gin.Context) {
+func (app *App) checkWallet(c *gin.Context) {
 	a := c.Param("address")
-	c.JSON(http.StatusOK, gin.H{"allowed": app.c.IsPresent(a)})
+	if !app.c.IsPresent(a) {
+		c.JSON(http.StatusNotFound, gin.H{"registered": false})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"registered": true})
 }
 
 func (app *App) activate(c *gin.Context) {
