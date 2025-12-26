@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"time"
 
@@ -223,6 +224,10 @@ func (app *App) list(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	sort.Slice(users, func(i, j int) bool {
+		return users[i].Timestamp > users[j].Timestamp
+	})
 
 	mime := c.DefaultQuery("mime", "json")
 	switch mime {
