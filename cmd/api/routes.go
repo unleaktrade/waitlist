@@ -26,6 +26,7 @@ var swaggerFS embed.FS
 
 func setupRouter(app *App) *gin.Engine {
 	r := gin.Default()
+	r.Use(app.cors, app.limit)
 	t := template.Must(template.ParseFS(tfs, "templates/*"))
 	r.SetHTMLTemplate(t)
 
@@ -46,7 +47,6 @@ func setupRouter(app *App) *gin.Engine {
 	})
 
 	api := r.Group("/")
-	api.Use(app.cors, app.limit)
 	api.POST("/register", app.register)
 	api.POST("/activate/:token/:hash", app.activate)
 	protected := api.Group("/")
