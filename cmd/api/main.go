@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gagliardetto/solana-go"
+	"github.com/unleaktrade/waitlist/internal/airdrop"
 	"github.com/unleaktrade/waitlist/internal/cache"
 	"github.com/unleaktrade/waitlist/internal/crypto"
 	"github.com/unleaktrade/waitlist/internal/crypto/cipher"
@@ -28,6 +30,7 @@ type App struct {
 	secpath1, secpath2 string
 	c                  *cache.Cache
 	apiKey             string
+	dist               *airdrop.Distributor // nil when distribution is disabled
 }
 
 var (
@@ -36,6 +39,10 @@ var (
 	ek                 string
 	secpath1, secpath2 string
 	apiKey             string
+	airdropTableName   = "Airdrop"
+	airdropEnabled     = true
+	authorityKey       solana.PrivateKey
+	solanaRPCURL       = "https://api.devnet.solana.com"
 )
 
 func setup() {
@@ -72,6 +79,40 @@ func setup() {
 	if apiKey == "" {
 		panic("waitlist api-key must be set")
 	}
+
+	if tn := os.Getenv("UNLEAKTRADE_AIRDROP_TABLE_NAME"); tn != "" {
+		airdropTableName = tn
+	}
+	if url := os.Getenv("UNLEAKTRADE_SOLANA_RPC_URL"); url != "" {
+		solanaRPCURL = url
+	}
+	if os.Getenv("UNLEAKTRADE_AIRDROP_ENABLED") == "false" {
+		airdropEnabled = false
+		log.Println("🪂 Airdrop distribution: disabled by configuration")
+		return
+	}
+	// The authority keypair is optional at boot: activation must keep working
+	// even when distribution cannot. Never log the key material itself.
+	authorityKey = nil
+	raw := os.Getenv("UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY")
+	if raw == "" {
+		airdropEnabled = false
+		log.Println("🚨 Airdrop distribution DISABLED: UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY is not set")
+		return
+	}
+	pk, err := solana.PrivateKeyFromSolanaKeygenFileBytes([]byte(raw))
+	if err != nil {
+		airdropEnabled = false
+		log.Printf("🚨 Airdrop distribution DISABLED: cannot parse authority key: %v", err)
+		return
+	}
+	if !pk.PublicKey().Equals(airdrop.AuthorityPub) {
+		airdropEnabled = false
+		log.Printf("🚨 Airdrop distribution DISABLED: authority key pubkey %s does not match expected %s", pk.PublicKey(), airdrop.AuthorityPub)
+		return
+	}
+	authorityKey = pk
+	log.Printf("🪂 Airdrop distribution: enabled (authority %s, table %q)", pk.PublicKey(), airdropTableName)
 }
 
 func (app *App) initCache() {
@@ -96,6 +137,19 @@ func newApp() *App {
 		panic(err)
 	}
 
+	var dist *airdrop.Distributor
+	if airdropEnabled && authorityKey != nil {
+		store, err := airdrop.NewDynamoStore(airdropTableName)
+		if err != nil {
+			panic(err)
+		}
+		chain, err := airdrop.NewChain(solanaRPCURL, authorityKey)
+		if err != nil {
+			panic(err) // unreachable: pubkey already checked in setup()
+		}
+		dist = airdrop.New(store, chain)
+	}
+
 	return &App{
 		db:       db,
 		jwt:      jwts["ES256"],
@@ -105,6 +159,7 @@ func newApp() *App {
 		secpath1: secpath1,
 		secpath2: secpath2,
 		apiKey:   apiKey,
+		dist:     dist,
 	}
 }
 
@@ -130,6 +185,15 @@ func main() {
 		MaxHeaderBytes: 1 << 20, // 1 MB
 	}
 
+	workerCtx, cancelWorker := context.WithCancel(context.Background())
+	if app.dist != nil {
+		app.wg.Add(1)
+		go func() {
+			defer app.wg.Done()
+			app.dist.Run(workerCtx)
+		}()
+	}
+
 	idleConnsClosed := make(chan struct{})
 	go func() {
 		quit := make(chan os.Signal, 1)
@@ -144,6 +208,7 @@ func main() {
 			// Error from closing listeners, or context timeout:
 			log.Printf("⚠️ HTTP server Shutdown: %v", err)
 		}
+		cancelWorker() // stop the airdrop worker; unfinished jobs recover via lease expiry
 
 		log.Printf("⏳ Waiting the end of all go-routines...")
 		app.wg.Wait() // wait for all go-routines

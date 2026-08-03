@@ -100,6 +100,142 @@
           "users",
           "count"
         ]
+      },
+      "Airdrop": {
+        "type": "object",
+        "description": "Unleak USDC (uUSDC) distribution state for an activated wallet. uUSDC is UnleakTrade's test version of USDC on Solana devnet — not real USDC, no real-world value.",
+        "properties": {
+          "cluster": {
+            "type": "string",
+            "example": "devnet"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "confirmed",
+              "already_distributed",
+              "failed_retryable",
+              "failed_terminal"
+            ]
+          },
+          "mint": {
+            "type": "string",
+            "example": "5jBqJmY2mKetudVa2XaC8U6UN2BNNirDiTnDEuA6pdyR"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "uUSDC",
+            "description": "Token symbol (Unleak USDC)"
+          },
+          "amount": {
+            "type": "string",
+            "example": "1000"
+          },
+          "rawAmount": {
+            "type": "string",
+            "example": "1000000000"
+          },
+          "signature": {
+            "type": "string",
+            "description": "Transaction signature, present once submitted; open it at https://explorer.solana.com/tx/{signature}?cluster=devnet"
+          },
+          "retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cluster",
+          "status",
+          "mint",
+          "symbol",
+          "amount",
+          "rawAmount",
+          "retryable"
+        ]
+      },
+      "ActivationResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/User"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "activationStatus": {
+                "type": "string",
+                "example": "active"
+              },
+              "airdrop": {
+                "$ref": "#/components/schemas/Airdrop"
+              }
+            },
+            "required": [
+              "activationStatus"
+            ]
+          }
+        ]
+      },
+      "AirdropJob": {
+        "type": "object",
+        "description": "Stored distribution job (operator view).",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "waitlist_uuid": {
+            "type": "string"
+          },
+          "campaign": {
+            "type": "string"
+          },
+          "cluster": {
+            "type": "string"
+          },
+          "mint": {
+            "type": "string"
+          },
+          "decimals": {
+            "type": "integer"
+          },
+          "raw_amount": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "attempts": {
+            "type": "integer"
+          },
+          "signature": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "integer"
+          },
+          "started_at": {
+            "type": "integer"
+          },
+          "confirmed_at": {
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "integer"
+          },
+          "next_attempt_at": {
+            "type": "integer"
+          },
+          "lease_until": {
+            "type": "integer"
+          },
+          "last_error_code": {
+            "type": "string"
+          },
+          "last_error_msg": {
+            "type": "string"
+          }
+        }
       }
     }
   },
@@ -363,7 +499,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/ActivationResponse"
                 }
               }
             }
@@ -400,6 +536,188 @@
           },
           "500": {
             "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{path1}/{path2}/airdrop/list": {
+      "get": {
+        "summary": "List airdrop distribution jobs (operator reconciliation)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "path1",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path2",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "jobs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AirdropJob"
+                      }
+                    },
+                    "count": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Distribution disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{path1}/{path2}/airdrop/{address}/retry": {
+      "post": {
+        "summary": "Re-arm a failed airdrop job, or enqueue one for an activated address missing a job",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "path1",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path2",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job re-armed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "job": {
+                      "$ref": "#/components/schemas/AirdropJob"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Job enqueued from scratch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "airdrop": {
+                      "$ref": "#/components/schemas/Airdrop"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Address is not an activated waitlist member",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Job is not in a retryable state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Distribution disabled",
             "content": {
               "application/json": {
                 "schema": {

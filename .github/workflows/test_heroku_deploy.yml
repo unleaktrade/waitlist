@@ -1,92 +1,75 @@
 name: Test & Heroku Deployment
-on: workflow_dispatch
-# on:
-#   push:
-#     branches:
-#       - main
-#   pull_request:
-#     branches:
-#       - main
-#   schedule: 
-#     - cron: "0 6 * * 1" # Every Monday at 6:00am UTC 
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Least privilege: nothing here writes to the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
+      # Live tests (DynamoDB *_TEST tables, Mailtrap sandbox) skip gracefully
+      # when these secrets are absent; create them to re-enable live coverage.
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      MAILTRAP_USER: ${{ secrets.MAILTRAP_USER }}
+      MAILTRAP_PASSWORD: ${{ secrets.MAILTRAP_PASSWORD }}
       UNLEAKTRADE_API_SECURE_PATH1: "foo"
       UNLEAKTRADE_API_SECURE_PATH2: "bar"
-      UNLEAKTRADE_ENCRYPTION_KEY: ${{ secrets.UNLEAKTRADE_ENCRYPTION_KEY }}
-      UNLEAKTRADE_GSUITE_PASSWORD: ${{ secrets.UNLEAKTRADE_GSUITE_PASSWORD }}
-      UNLEAKTRADE_GSUITE_USER: ${{ secrets.UNLEAKTRADE_GSUITE_USER }}
-      MAILTRAP_PASSWORD: ${{ secrets.MAILTRAP_PASSWORD }}
-      MAILTRAP_USER: ${{ secrets.MAILTRAP_USER }}
-    strategy:
-      matrix:
-        go-version: [1.25.x]
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
-      - name: setup
-        uses: actions/setup-go@v5
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: ${{ matrix.go-version }}
-      - name: Display Go version
-        run: go version
-      - run: go test -v ./...
-      - name: Get coverage report
-        run: go test -coverprofile=coverage.out ./...
-      - name: Convert coverage report (HTML)
-        run: go tool cover -html=coverage.out -o coverage_go_${{ matrix.go-version }}_${{ matrix.os }}.html
-      - name: Archive code coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: code-coverage_${{ matrix.go-version }}_${{ matrix.os }}
-          path: ./coverage*.html
-          compression-level: 9
-          retention-days: 30
+          go-version-file: go.mod
+      - name: Vet
+        run: go vet ./...
+      - name: Test (race) with coverage
+        run: go test -race -coverprofile=coverage.out ./...
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
-          fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }} # required
-          verbose: true
+          files: coverage.out
+          fail_ci_if_error: false # no CODECOV_TOKEN configured yet
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   heroku:
     runs-on: ubuntu-latest
     needs: test
-    if: github.ref == 'refs/heads/main'
+    # Deploys stay manual: dispatch the workflow from main.
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: akhileshns/heroku-deploy@v3.13.15
+      - name: Checkout (full history for the Heroku git push)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "polar-plains-98105"
-          heroku_email: "jsie@fairhive-labs.com"
-          healthcheck: "https://polar-plains-98105.herokuapp.com/health"
+          fetch-depth: 0
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@1b080913896a5d6d44a18e9e208f8eb1fee9b0f7 # v3.15.15
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: "unleaktrade-waitlist"
+          heroku_email: "jsie@trendev.fr"
+          healthcheck: "https://unleaktrade-waitlist-028080d4039f.herokuapp.com/health"
           checkstring: "ok"
           delay: 5
           rollbackonhealthcheckfailed: true
-        env:
-          HD_AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-          HD_AWS_REGION: ${{ secrets.AWS_REGION }}
-          HD_AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          HD_UNLEAKTRADE_API_SECURE_PATH1: ${{ secrets.UNLEAKTRADE_API_SECURE_PATH1 }}
-          HD_UNLEAKTRADE_API_SECURE_PATH2: ${{ secrets.UNLEAKTRADE_API_SECURE_PATH2 }}
-          HD_UNLEAKTRADE_ENCRYPTION_KEY: ${{ secrets.UNLEAKTRADE_ENCRYPTION_KEY }}
-          HD_UNLEAKTRADE_GSUITE_PASSWORD: ${{ secrets.UNLEAKTRADE_GSUITE_PASSWORD }}
-          HD_UNLEAKTRADE_GSUITE_USER: ${{ secrets.UNLEAKTRADE_GSUITE_USER }}
-          HD_MAILTRAP_PASSWORD: ${{ secrets.MAILTRAP_PASSWORD }}
-          HD_MAILTRAP_USER: ${{ secrets.MAILTRAP_USER }}
-          HD_GIN_MODE: release
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2.2.1
-        env:
-          SLACK_CHANNEL: _github
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: Heroku Deployment - preregister/waitlist
-          SLACK_MESSAGE: "<https://unleaktrade-waitlist-028080d4039f.herokuapp.com/admin/${{ secrets.UNLEAKTRADE_API_SECURE_PATH1 }}/${{ secrets.UNLEAKTRADE_API_SECURE_PATH2 }}/users|Users details>"
-          SLACK_FOOTER: "<https://unleaktrade-waitlist-028080d4039f.herokuapp.com/${{ secrets.UNLEAKTRADE_API_SECURE_PATH1 }}/${{ secrets.UNLEAKTRADE_API_SECURE_PATH2 }}/list?mime=csv| Users list - CSV>"
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        # Config vars are deliberately NOT managed here (no HD_* entries):
+        # they are set once via `heroku config:set` (see README). Empty HD_*
+        # values would overwrite live config with blanks.
