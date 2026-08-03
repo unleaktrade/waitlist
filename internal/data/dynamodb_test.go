@@ -17,7 +17,21 @@ const (
 	ek        = "4e8e7d24d3a991f9e83005d96f8d5d69b4763143a48cf5bdf7941726a26a69ab"
 )
 
+// requireAWS skips live DynamoDB tests when no AWS credentials resolve, so
+// the suite stays green offline and in CI without secrets.
+func requireAWS(t *testing.T) {
+	t.Helper()
+	sess, err := session.NewSession()
+	if err != nil {
+		t.Skipf("no AWS session: %v", err)
+	}
+	if _, err := sess.Config.Credentials.Get(); err != nil {
+		t.Skipf("no AWS credentials: %v", err)
+	}
+}
+
 func TestListTables(t *testing.T) {
+	requireAWS(t)
 	sess := session.Must(session.NewSession())
 	svc := dynamodb.New(sess)
 	if svc == nil {
@@ -84,6 +98,7 @@ func TestNewDynamoDB(t *testing.T) {
 }
 
 func TestSave(t *testing.T) {
+	requireAWS(t)
 	db, _ := NewDynamoDB(tableName, ek)
 
 	u := NewUser(sponsor, "jsie@trendev.fr", sponsor) // sponsor is first user and its own sponsor
@@ -127,6 +142,7 @@ func TestSave(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
+	requireAWS(t)
 	db, _ := NewDynamoDB(tableName, ek)
 	t.Run("no option", func(t *testing.T) {
 		users, err := db.List()
@@ -188,6 +204,7 @@ func TestList(t *testing.T) {
 }
 
 func TestIsPresent(t *testing.T) {
+	requireAWS(t)
 	address := "8mxgS3kGYjmCwyktyBqcAxxYy4G32vUKuCNEUdpAySPk"
 	db, _ := NewDynamoDB(tableName, ek)
 

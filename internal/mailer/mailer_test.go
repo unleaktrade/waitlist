@@ -32,7 +32,15 @@ func TestNewMailer(t *testing.T) {
 	}
 }
 
+func requireMailtrap(t *testing.T) {
+	t.Helper()
+	if from == "" || password == "" {
+		t.Skip("MAILTRAP_USER / MAILTRAP_PASSWORD not set")
+	}
+}
+
 func TestSendActivationEmail(t *testing.T) {
+	requireMailtrap(t)
 	m := New(from, password, host, port)
 	if err := m.SendActivationEmail(email, fmt.Sprintf("https://unleak.trade/activate/%s", token), hash); err != nil {
 		t.Errorf("error sending activation email : %v", err)
@@ -41,6 +49,7 @@ func TestSendActivationEmail(t *testing.T) {
 }
 
 func TestSendConfirmationEmail(t *testing.T) {
+	requireMailtrap(t)
 	m := New(from, password, host, port)
 	if err := m.SendConfirmationEmail(email); err != nil {
 		t.Errorf("error sending confirmation email : %v", err)

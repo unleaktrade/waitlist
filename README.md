@@ -56,11 +56,13 @@ heroku config:set UNLEAKTRADE_AIRDROP_TABLE_NAME="Airdrop" -a unleaktrade-waitli
 heroku config:set UNLEAKTRADE_SOLANA_RPC_URL="https://api.devnet.solana.com" -a unleaktrade-waitlist  # optional, default
 ```
 
-For workflow-driven deploys, the equivalent GitHub repo secret is `HD_UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY` (the deploy action strips the `HD_` prefix into a config var):
+The GitHub workflow deliberately does **not** manage config vars (empty secrets would overwrite live values with blanks); it only tests and, on manual dispatch from `main`, pushes the code to Heroku. That deploy job needs one repo secret:
 
 ```sh
-gh secret set HD_UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY --repo unleaktrade/waitlist < maker.json
+gh secret set HEROKU_API_KEY --repo unleaktrade/waitlist --body "$(heroku auth:token)"
 ```
+
+Live tests (DynamoDB `*_TEST` tables, Mailtrap sandbox) skip when credentials are absent; add `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_REGION` (and `MAILTRAP_USER` / `MAILTRAP_PASSWORD`) as repo secrets to re-enable them in CI. The devnet distribution e2e additionally requires `UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY` in the local environment and is intended to run locally, not in CI.
 
 ### Operator runbook
 
