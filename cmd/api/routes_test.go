@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/unleaktrade/waitlist/internal/airdrop"
 	"github.com/unleaktrade/waitlist/internal/cache"
 	"github.com/unleaktrade/waitlist/internal/crypto"
 	"github.com/unleaktrade/waitlist/internal/crypto/cipher"
@@ -32,15 +33,15 @@ func TestRegister(t *testing.T) {
 	var db data.DB = data.MockDB
 	k, _ := cipher.GenerateKey(32)
 	app := &App{
-		db,
-		crypto.NewJWTHS256(k),
-		&mailer.MockSmtpMailer,
-		sync.WaitGroup{},
-		limiter.NewUnlimited(),
-		"path1",
-		"path2",
-		cache.New(),
-		testApiKey,
+		db:       db,
+		jwt:      crypto.NewJWTHS256(k),
+		mailer:   &mailer.MockSmtpMailer,
+		wg:       sync.WaitGroup{},
+		rl:       limiter.NewUnlimited(),
+		secpath1: "path1",
+		secpath2: "path2",
+		c:        cache.New(),
+		apiKey:   testApiKey,
 	}
 	r := setupRouter(app)
 	tt := []struct {
@@ -187,15 +188,15 @@ func TestActivate(t *testing.T) {
 	var db data.DB = data.NewMockDBContent([]string{sponsor})
 	k, _ := cipher.GenerateKey(32)
 	app := &App{
-		db,
-		crypto.NewJWTHS256(k),
-		&mailer.MockSmtpMailer,
-		sync.WaitGroup{},
-		limiter.NewUnlimited(),
-		"path1",
-		"path2",
-		cache.New(),
-		testApiKey,
+		db:       db,
+		jwt:      crypto.NewJWTHS256(k),
+		mailer:   &mailer.MockSmtpMailer,
+		wg:       sync.WaitGroup{},
+		rl:       limiter.NewUnlimited(),
+		secpath1: "path1",
+		secpath2: "path2",
+		c:        cache.New(),
+		apiKey:   testApiKey,
 	}
 	r := setupRouter(app)
 
@@ -350,15 +351,15 @@ func TestHealth(t *testing.T) {
 	var db data.DB = data.MockDB
 	k, _ := cipher.GenerateKey(32)
 	app := &App{
-		db,
-		crypto.NewJWTHS256(k),
-		&mailer.MockSmtpMailer,
-		sync.WaitGroup{},
-		limiter.NewUnlimited(),
-		"path1",
-		"path2",
-		cache.New(),
-		testApiKey,
+		db:       db,
+		jwt:      crypto.NewJWTHS256(k),
+		mailer:   &mailer.MockSmtpMailer,
+		wg:       sync.WaitGroup{},
+		rl:       limiter.NewUnlimited(),
+		secpath1: "path1",
+		secpath2: "path2",
+		c:        cache.New(),
+		apiKey:   testApiKey,
 	}
 	r := setupRouter(app)
 
@@ -398,15 +399,15 @@ func TestRequireAPIKey(t *testing.T) {
 	var db data.DB = data.MockDB
 	k, _ := cipher.GenerateKey(32)
 	app := &App{
-		db,
-		crypto.NewJWTHS256(k),
-		&mailer.MockSmtpMailer,
-		sync.WaitGroup{},
-		limiter.NewUnlimited(),
-		"path1",
-		"path2",
-		cache.New(),
-		testApiKey,
+		db:       db,
+		jwt:      crypto.NewJWTHS256(k),
+		mailer:   &mailer.MockSmtpMailer,
+		wg:       sync.WaitGroup{},
+		rl:       limiter.NewUnlimited(),
+		secpath1: "path1",
+		secpath2: "path2",
+		c:        cache.New(),
+		apiKey:   testApiKey,
 	}
 	r := setupRouter(app)
 
@@ -440,15 +441,15 @@ func TestCheckWallet(t *testing.T) {
 	var db data.DB = data.MockDB
 	k, _ := cipher.GenerateKey(32)
 	app := &App{
-		db,
-		crypto.NewJWTHS256(k),
-		&mailer.MockSmtpMailer,
-		sync.WaitGroup{},
-		limiter.NewUnlimited(),
-		"path1",
-		"path2",
-		cache.New(),
-		testApiKey,
+		db:       db,
+		jwt:      crypto.NewJWTHS256(k),
+		mailer:   &mailer.MockSmtpMailer,
+		wg:       sync.WaitGroup{},
+		rl:       limiter.NewUnlimited(),
+		secpath1: "path1",
+		secpath2: "path2",
+		c:        cache.New(),
+		apiKey:   testApiKey,
 	}
 	r := setupRouter(app)
 
@@ -497,15 +498,15 @@ func TestList(t *testing.T) {
 	var db data.DB = data.MockDB
 	k, _ := cipher.GenerateKey(32)
 	app := &App{
-		db,
-		crypto.NewJWTHS256(k),
-		&mailer.MockSmtpMailer,
-		sync.WaitGroup{},
-		limiter.NewUnlimited(),
-		"path1",
-		"path2",
-		cache.New(),
-		testApiKey,
+		db:       db,
+		jwt:      crypto.NewJWTHS256(k),
+		mailer:   &mailer.MockSmtpMailer,
+		wg:       sync.WaitGroup{},
+		rl:       limiter.NewUnlimited(),
+		secpath1: "path1",
+		secpath2: "path2",
+		c:        cache.New(),
+		apiKey:   testApiKey,
 	}
 	r := setupRouter(app)
 
@@ -671,6 +672,258 @@ func TestList(t *testing.T) {
 		if w.Code != http.StatusInternalServerError {
 			t.Errorf("Status code is incorrect, got %d, want %d", w.Code, http.StatusInternalServerError)
 			t.FailNow()
+		}
+	})
+}
+
+func newAirdropTestApp(db data.DB) (*App, *airdrop.MockStore) {
+	k, _ := cipher.GenerateKey(32)
+	s := airdrop.NewMockStore()
+	app := &App{
+		db:       db,
+		jwt:      crypto.NewJWTHS256(k),
+		mailer:   &mailer.MockSmtpMailer,
+		wg:       sync.WaitGroup{},
+		rl:       limiter.NewUnlimited(),
+		secpath1: "path1",
+		secpath2: "path2",
+		c:        cache.New(),
+		apiKey:   testApiKey,
+		dist:     airdrop.New(s, airdrop.NewMockChain()),
+	}
+	return app, s
+}
+
+func TestActivateAirdrop(t *testing.T) {
+	address, email := "5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF", "john.doe@mailservice.com"
+
+	activate := func(app *App) *httptest.ResponseRecorder {
+		vt, _ := app.jwt.Create(&data.User{Address: address, Email: email, Sponsor: sponsor}, time.Now())
+		vh := app.jwt.Hash(vt)
+		r := setupRouter(app)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", fmt.Sprintf("/activate/%s/%s", vt, vh), nil)
+		r.ServeHTTP(w, req)
+		return w
+	}
+
+	type activationResp struct {
+		Address          string            `json:"address"`
+		ActivationStatus string            `json:"activationStatus"`
+		Airdrop          *airdrop.Response `json:"airdrop"`
+	}
+
+	t.Run("201 embeds pending airdrop", func(t *testing.T) {
+		app, s := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		w := activate(app)
+		if w.Code != http.StatusCreated {
+			t.Fatalf("got %d, want 201: %s", w.Code, w.Body.String())
+		}
+		var resp activationResp
+		if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+			t.Fatal(err)
+		}
+		if resp.ActivationStatus != "active" {
+			t.Errorf("activationStatus = %q, want active", resp.ActivationStatus)
+		}
+		if resp.Airdrop == nil {
+			t.Fatal("airdrop object missing from 201 response")
+		}
+		if resp.Airdrop.Status != airdrop.StatusPending {
+			t.Errorf("airdrop status = %s, want pending", resp.Airdrop.Status)
+		}
+		if resp.Airdrop.Cluster != "devnet" || resp.Airdrop.Mint != airdrop.ExpectedMint.String() {
+			t.Errorf("bad airdrop payload: %+v", resp.Airdrop)
+		}
+		if resp.Airdrop.RawAmount != "1000000000" || resp.Airdrop.Amount != "1000" {
+			t.Errorf("bad amounts: %+v", resp.Airdrop)
+		}
+		if !resp.Airdrop.Retryable {
+			t.Error("pending airdrop must be retryable")
+		}
+		if _, ok := s.Jobs[address]; !ok {
+			t.Error("activation must enqueue exactly one distribution job")
+		}
+	})
+
+	t.Run("existing confirmed job maps to already_distributed", func(t *testing.T) {
+		app, s := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		s.Jobs[address] = &airdrop.Job{Address: address, Status: airdrop.StatusConfirmed, Signature: "sig123", Cluster: "devnet", Mint: airdrop.ExpectedMint.String()}
+		w := activate(app)
+		if w.Code != http.StatusCreated {
+			t.Fatalf("got %d, want 201: %s", w.Code, w.Body.String())
+		}
+		var resp activationResp
+		json.NewDecoder(w.Body).Decode(&resp)
+		if resp.Airdrop == nil || resp.Airdrop.Status != airdrop.StatusAlreadyDistributed {
+			t.Fatalf("airdrop = %+v, want already_distributed", resp.Airdrop)
+		}
+		if resp.Airdrop.Signature != "sig123" {
+			t.Errorf("signature = %q, want sig123", resp.Airdrop.Signature)
+		}
+		if len(s.Jobs) != 1 {
+			t.Errorf("duplicate activation created a second job: %d jobs", len(s.Jobs))
+		}
+	})
+
+	t.Run("enqueue failure still activates with failed_retryable", func(t *testing.T) {
+		app, s := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		s.EnqueueErr = fmt.Errorf("dynamo down")
+		w := activate(app)
+		if w.Code != http.StatusCreated {
+			t.Fatalf("activation must succeed despite airdrop failure, got %d", w.Code)
+		}
+		var resp activationResp
+		json.NewDecoder(w.Body).Decode(&resp)
+		if resp.Airdrop == nil || resp.Airdrop.Status != airdrop.StatusFailedRetryable {
+			t.Fatalf("airdrop = %+v, want failed_retryable", resp.Airdrop)
+		}
+	})
+
+	t.Run("distribution disabled omits airdrop key", func(t *testing.T) {
+		app, _ := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		app.dist = nil
+		w := activate(app)
+		if w.Code != http.StatusCreated {
+			t.Fatalf("got %d, want 201", w.Code)
+		}
+		if strings.Contains(w.Body.String(), "airdrop") {
+			t.Errorf("disabled distribution must omit the airdrop key: %s", w.Body.String())
+		}
+	})
+
+	t.Run("duplicate activation keeps plain 409 body", func(t *testing.T) {
+		app, _ := newAirdropTestApp(data.NewMockDBContent([]string{address, sponsor}))
+		w := activate(app)
+		if w.Code != http.StatusConflict {
+			t.Fatalf("got %d, want 409", w.Code)
+		}
+		if strings.Contains(w.Body.String(), "airdrop") {
+			t.Errorf("409 body must stay unchanged: %s", w.Body.String())
+		}
+	})
+}
+
+func TestAirdropAdminEndpoints(t *testing.T) {
+	address := "5tsrsspeS4ARKhPzLpzqaMjwu2KzhvktoJFW1Lv7pqVF"
+
+	t.Run("list requires api key", func(t *testing.T) {
+		app, _ := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		r := setupRouter(app)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/path1/path2/airdrop/list", nil)
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusUnauthorized {
+			t.Errorf("got %d, want 401", w.Code)
+		}
+	})
+
+	t.Run("list requires secure paths", func(t *testing.T) {
+		app, _ := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		r := setupRouter(app)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/wrong/paths/airdrop/list", nil)
+		addAPIKey(req)
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusNotFound {
+			t.Errorf("got %d, want 404", w.Code)
+		}
+	})
+
+	t.Run("list returns jobs", func(t *testing.T) {
+		app, s := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		s.Jobs[address] = &airdrop.Job{Address: address, Status: airdrop.StatusConfirmed, Signature: "sig"}
+		r := setupRouter(app)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/path1/path2/airdrop/list", nil)
+		addAPIKey(req)
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Fatalf("got %d, want 200: %s", w.Code, w.Body.String())
+		}
+		var res struct {
+			Jobs  []*airdrop.Job `json:"jobs"`
+			Count int            `json:"count"`
+		}
+		if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+			t.Fatal(err)
+		}
+		if res.Count != 1 || len(res.Jobs) != 1 || res.Jobs[0].Address != address {
+			t.Errorf("unexpected list payload: %+v", res)
+		}
+	})
+
+	t.Run("retry re-arms failed job", func(t *testing.T) {
+		app, s := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		s.Jobs[address] = &airdrop.Job{Address: address, Status: airdrop.StatusFailedTerminal, Attempts: 10}
+		r := setupRouter(app)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", fmt.Sprintf("/path1/path2/airdrop/%s/retry", address), nil)
+		addAPIKey(req)
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Fatalf("got %d, want 200: %s", w.Code, w.Body.String())
+		}
+		if s.Jobs[address].Status != airdrop.StatusPending {
+			t.Errorf("job status = %s, want pending", s.Jobs[address].Status)
+		}
+	})
+
+	t.Run("retry of confirmed job conflicts", func(t *testing.T) {
+		app, s := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		s.Jobs[address] = &airdrop.Job{Address: address, Status: airdrop.StatusConfirmed}
+		r := setupRouter(app)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", fmt.Sprintf("/path1/path2/airdrop/%s/retry", address), nil)
+		addAPIKey(req)
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusConflict {
+			t.Errorf("got %d, want 409", w.Code)
+		}
+	})
+
+	t.Run("retry enqueues for activated address without job", func(t *testing.T) {
+		app, s := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		app.c.Add(address, time.Now().UnixMilli())
+		r := setupRouter(app)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", fmt.Sprintf("/path1/path2/airdrop/%s/retry", address), nil)
+		addAPIKey(req)
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusCreated {
+			t.Fatalf("got %d, want 201: %s", w.Code, w.Body.String())
+		}
+		if _, ok := s.Jobs[address]; !ok {
+			t.Error("retry must enqueue a job for an activated address")
+		}
+	})
+
+	t.Run("retry rejects unknown address", func(t *testing.T) {
+		app, _ := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		r := setupRouter(app)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", fmt.Sprintf("/path1/path2/airdrop/%s/retry", address), nil)
+		addAPIKey(req)
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusNotFound {
+			t.Errorf("got %d, want 404", w.Code)
+		}
+	})
+
+	t.Run("endpoints unavailable when distribution disabled", func(t *testing.T) {
+		app, _ := newAirdropTestApp(data.NewMockDBContent([]string{sponsor}))
+		app.dist = nil
+		r := setupRouter(app)
+		for _, req := range []*http.Request{
+			httptest.NewRequest("GET", "/path1/path2/airdrop/list", nil),
+			httptest.NewRequest("POST", fmt.Sprintf("/path1/path2/airdrop/%s/retry", address), nil),
+		} {
+			w := httptest.NewRecorder()
+			addAPIKey(req)
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusServiceUnavailable {
+				t.Errorf("%s %s: got %d, want 503", req.Method, req.URL.Path, w.Code)
+			}
 		}
 	})
 }

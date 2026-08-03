@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -15,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/unleaktrade/waitlist/internal/airdrop"
 	"github.com/unleaktrade/waitlist/internal/data"
 )
 
@@ -59,6 +61,8 @@ func setupRouter(app *App) *gin.Engine {
 	})
 	protected.GET("/:path1/:path2/list", app.list)
 	protected.GET("/check-wallet/:address", app.checkWallet)
+	protected.GET("/:path1/:path2/airdrop/list", app.airdropList)
+	protected.POST("/:path1/:path2/airdrop/:address/retry", app.airdropRetry)
 	return r
 }
 
@@ -166,7 +170,65 @@ func (app *App) activate(c *gin.Context) {
 		app.mailer.SendConfirmationEmail(e)
 	}()
 
-	c.JSON(http.StatusCreated, u)
+	resp := struct {
+		*data.User
+		ActivationStatus string            `json:"activationStatus"`
+		Airdrop          *airdrop.Response `json:"airdrop,omitempty"`
+	}{User: u, ActivationStatus: "active"}
+	if app.dist != nil {
+		ar := app.dist.Enqueue(u)
+		resp.Airdrop = &ar
+	}
+	c.JSON(http.StatusCreated, resp)
+}
+
+// airdropList exposes every distribution job for operator reconciliation.
+func (app *App) airdropList(c *gin.Context) {
+	if c.Param("path1") != app.secpath1 || c.Param("path2") != app.secpath2 {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+	if app.dist == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "airdrop distribution is disabled"})
+		return
+	}
+	jobs, err := app.dist.Jobs()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	sort.Slice(jobs, func(i, j int) bool { return jobs[i].CreatedAt > jobs[j].CreatedAt })
+	c.JSON(http.StatusOK, gin.H{"jobs": jobs, "count": len(jobs)})
+}
+
+// airdropRetry re-arms a failed job, or enqueues one from scratch for an
+// activated address whose enqueue was lost.
+func (app *App) airdropRetry(c *gin.Context) {
+	if c.Param("path1") != app.secpath1 || c.Param("path2") != app.secpath2 {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+	if app.dist == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "airdrop distribution is disabled"})
+		return
+	}
+	a := c.Param("address")
+	j, err := app.dist.Retry(a)
+	switch {
+	case err == nil:
+		c.JSON(http.StatusOK, gin.H{"job": j})
+	case errors.Is(err, airdrop.ErrJobMissing):
+		if !app.c.IsPresent(a) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "address is not an activated waitlist member"})
+			return
+		}
+		ar := app.dist.Enqueue(&data.User{Address: a})
+		c.JSON(http.StatusCreated, gin.H{"airdrop": ar})
+	case errors.Is(err, airdrop.ErrNotClaimed):
+		c.JSON(http.StatusConflict, gin.H{"error": "job is not in a retryable state"})
+	default:
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
 }
 
 func (app *App) limit(c *gin.Context) {

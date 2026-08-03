@@ -80,6 +80,9 @@ jobs:
           HD_UNLEAKTRADE_GSUITE_USER: ${{ secrets.UNLEAKTRADE_GSUITE_USER }}
           HD_MAILTRAP_PASSWORD: ${{ secrets.MAILTRAP_PASSWORD }}
           HD_MAILTRAP_USER: ${{ secrets.MAILTRAP_USER }}
+          HD_UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY: ${{ secrets.HD_UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY }}
+          HD_UNLEAKTRADE_SOLANA_RPC_URL: ${{ secrets.HD_UNLEAKTRADE_SOLANA_RPC_URL }}
+          HD_UNLEAKTRADE_AIRDROP_TABLE_NAME: Airdrop
           HD_GIN_MODE: release
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2.2.1
