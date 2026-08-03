@@ -409,6 +409,7 @@ func TestRequireAPIKey(t *testing.T) {
 		c:        cache.New(),
 		apiKey:   testApiKey,
 	}
+	app.c.Add(sponsor, time.Now().UnixMilli())
 	r := setupRouter(app)
 
 	tt := []struct {
@@ -424,7 +425,7 @@ func TestRequireAPIKey(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("GET", "/health", nil)
+			req, _ := http.NewRequest("GET", "/check-wallet/"+sponsor, nil)
 			if tc.key != "" {
 				req.Header.Set("UNLK-API-KEY", tc.key)
 			}
@@ -435,6 +436,15 @@ func TestRequireAPIKey(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("health is public", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/health", nil)
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Errorf("public /health: got %d, want 200", w.Code)
+		}
+	})
 }
 
 func TestCheckWallet(t *testing.T) {

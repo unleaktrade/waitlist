@@ -63,9 +63,9 @@ jobs:
       - uses: akhileshns/heroku-deploy@v3.13.15
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "polar-plains-98105"
+          heroku_app_name: "unleaktrade-waitlist"
           heroku_email: "jsie@fairhive-labs.com"
-          healthcheck: "https://polar-plains-98105.herokuapp.com/health"
+          healthcheck: "https://unleaktrade-waitlist-028080d4039f.herokuapp.com/health"
           checkstring: "ok"
           delay: 5
           rollbackonhealthcheckfailed: true

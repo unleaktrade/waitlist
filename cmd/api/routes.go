@@ -51,14 +51,16 @@ func setupRouter(app *App) *gin.Engine {
 	api := r.Group("/")
 	api.POST("/register", app.register)
 	api.POST("/activate/:token/:hash", app.activate)
-	protected := api.Group("/")
-	protected.Use(app.requireAPIKey)
-	protected.GET("/health", func(c *gin.Context) {
+	// Public: the Heroku deploy healthcheck cannot send headers, and the
+	// endpoint exposes nothing but a static shape.
+	api.GET("/health", func(c *gin.Context) {
 		// Minimal, standard JSON health shape
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",
 		})
 	})
+	protected := api.Group("/")
+	protected.Use(app.requireAPIKey)
 	protected.GET("/:path1/:path2/list", app.list)
 	protected.GET("/check-wallet/:address", app.checkWallet)
 	protected.GET("/:path1/:path2/airdrop/list", app.airdropList)

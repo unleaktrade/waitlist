@@ -1,7 +1,9 @@
-// Package airdrop distributes the custom devnet USDC token to activated
-// waitlist wallets. The mint cannot be minted against (its supply is already
-// u64::MAX), so every payout is a TransferChecked from the pre-funded
-// distribution authority. See https://github.com/unleaktrade/waitlist/issues/18
+// Package airdrop distributes Unleak USDC (uUSDC) — UnleakTrade's test
+// version of USDC on Solana devnet, not real USDC and worth nothing outside
+// the beta — to activated waitlist wallets. The mint cannot be minted against
+// (its supply is already u64::MAX), so every payout is a TransferChecked from
+// the pre-funded distribution authority.
+// See https://github.com/unleaktrade/waitlist/issues/18
 package airdrop
 
 import (
@@ -11,6 +13,11 @@ import (
 const (
 	Cluster  = "devnet"
 	Campaign = "devnet-usdc-v1"
+
+	// Symbol and DisplayName identify the distributed token across the API
+	// and every user-facing surface.
+	Symbol      = "uUSDC"
+	DisplayName = "Unleak USDC"
 
 	Decimals  = uint8(6)
 	RawAmount = uint64(1_000_000_000) // 1000 tokens
@@ -84,6 +91,7 @@ type Response struct {
 	Cluster   string `json:"cluster"`
 	Status    string `json:"status"`
 	Mint      string `json:"mint"`
+	Symbol    string `json:"symbol"`
 	Amount    string `json:"amount"`
 	RawAmount string `json:"rawAmount"`
 	Signature string `json:"signature,omitempty"`
@@ -102,6 +110,7 @@ func ResponseFor(j *Job) Response {
 		Cluster:   j.Cluster,
 		Status:    status,
 		Mint:      j.Mint,
+		Symbol:    Symbol,
 		Amount:    Amount,
 		RawAmount: "1000000000",
 		Signature: j.Signature,
@@ -115,6 +124,7 @@ func NewResponse(status string) Response {
 		Cluster:   Cluster,
 		Status:    status,
 		Mint:      ExpectedMint.String(),
+		Symbol:    Symbol,
 		Amount:    Amount,
 		RawAmount: "1000000000",
 		Retryable: retryable(status),

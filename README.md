@@ -24,15 +24,17 @@ Learn more at [unleak.trade](https://unleak.trade).
 
 Complete workflow details and sequence diagrams will be available very soon.
 
-## Devnet USDC Airdrop
+## Unleak USDC (uUSDC) Airdrop
 
-After a successful waitlist activation, the service asynchronously distributes **1000 custom devnet USDC** (`5jBqJmY2mKetudVa2XaC8U6UN2BNNirDiTnDEuA6pdyR`, 6 decimals, classic SPL token program) to the activated wallet. See [issue #18](https://github.com/unleaktrade/waitlist/issues/18) for the full design.
+**Unleak USDC (`uUSDC`)** — mint `5jBqJmY2mKetudVa2XaC8U6UN2BNNirDiTnDEuA6pdyR`, 6 decimals, classic SPL token program — is UnleakTrade's test version of USDC on Solana devnet: it mimics USDC in every beta trading flow, but it is **not real USDC**, has **no real-world value**, and cannot be bought, sold, or bridged.
+
+After a successful waitlist activation, the service asynchronously distributes **1000 uUSDC** to the activated wallet. See [issue #18](https://github.com/unleaktrade/waitlist/issues/18) for the full design.
 
 Key properties:
 
 - **Transfer-only**: the mint's supply is already `u64::MAX`, so minting is impossible. Payouts are `TransferChecked` from the pre-funded distribution authority `7QVKMkpbpniPhDu3V3iXTauDwkUfaAiSZ9QrqfQioEDy`, which also pays ATA creation rent.
 - **Idempotent**: one DynamoDB job per wallet (conditional writes); duplicate activations, worker retries, and concurrent workers can never produce a second payout.
-- **Non-blocking**: activation always succeeds even when distribution is delayed or fails. The activation `201` response embeds an `airdrop` object (`pending | processing | confirmed | already_distributed | failed_retryable | failed_terminal`); there is deliberately no polling endpoint.
+- **Non-blocking**: activation always succeeds even when distribution is delayed or fails. The activation `201` response embeds an `airdrop` object (`pending | processing | confirmed | already_distributed | failed_retryable | failed_terminal`, with `symbol: "uUSDC"`); there is deliberately no polling endpoint.
 - **Mint drift guard**: the worker verifies the configured mint against the beta app's on-chain `Config.usdcMint` (PDA `GgE8H46in1MLh8EJs6Je7ps7wEysiEks7ZcMVVgq4xTZ`) at startup and every 10 minutes. On drift, distribution halts (jobs queue as `pending`) until an operator updates the campaign constants and redeploys.
 
 ### Configuration
@@ -44,7 +46,17 @@ Key properties:
 | `UNLEAKTRADE_AIRDROP_TABLE_NAME` | defaults to `Airdrop` (DynamoDB, partition key `address` (S)) |
 | `UNLEAKTRADE_AIRDROP_ENABLED` | defaults to `true`; `false` disables enqueueing, the worker, and the `airdrop` response key |
 
-The authority key reaches Heroku via the GitHub repo secret `HD_UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY` (the deploy action strips the `HD_` prefix into a config var):
+The service persists jobs in DynamoDB: table `Airdrop` in production and `Airdrop_TEST` for the live test suite (same schema, partition key `address` (S), on-demand billing).
+
+Deploys are currently manual (`workflow_dispatch`), so config vars are set directly on the Heroku app:
+
+```sh
+heroku config:set UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY="$(cat maker.json)" -a unleaktrade-waitlist
+heroku config:set UNLEAKTRADE_AIRDROP_TABLE_NAME="Airdrop" -a unleaktrade-waitlist            # optional, default
+heroku config:set UNLEAKTRADE_SOLANA_RPC_URL="https://api.devnet.solana.com" -a unleaktrade-waitlist  # optional, default
+```
+
+For workflow-driven deploys, the equivalent GitHub repo secret is `HD_UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY` (the deploy action strips the `HD_` prefix into a config var):
 
 ```sh
 gh secret set HD_UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY --repo unleaktrade/waitlist < maker.json

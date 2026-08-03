@@ -103,7 +103,7 @@
       },
       "Airdrop": {
         "type": "object",
-        "description": "Devnet USDC distribution state for an activated wallet.",
+        "description": "Unleak USDC (uUSDC) distribution state for an activated wallet. uUSDC is UnleakTrade's test version of USDC on Solana devnet — not real USDC, no real-world value.",
         "properties": {
           "cluster": {
             "type": "string",
@@ -123,6 +123,11 @@
           "mint": {
             "type": "string",
             "example": "5jBqJmY2mKetudVa2XaC8U6UN2BNNirDiTnDEuA6pdyR"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "uUSDC",
+            "description": "Token symbol (Unleak USDC)"
           },
           "amount": {
             "type": "string",
@@ -144,6 +149,7 @@
           "cluster",
           "status",
           "mint",
+          "symbol",
           "amount",
           "rawAmount",
           "retryable"
