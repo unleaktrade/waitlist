@@ -10,19 +10,60 @@ This microservice handles pre-registration during the waitlist phase of UnleakTr
 
 - Simple REST API for waitlist registration
 - Email and blockchain address validation
-- X/Twitter account (username)
+- Sponsor (referral) address: registration requires the Solana address of an already activated member
 - Secure hash generation for each registration
 - Minimal dependencies and fast deployment
 
 ## About UnleakTrade
 
-UnleakTrade is a decentralized trading platform that enables private, secure OTC (Over-The-Counter) and RFQ (Request for Quote) transactions on the Solana blockchain. The platform leverages zero-knowledge proofs and blockchain technology to provide institutional-grade privacy for cryptocurrency trading.
+UnleakTrade is a decentralized trading platform that enables private, secure OTC (Over-The-Counter) and RFQ (Request for Quote) transactions on the Solana blockchain. The platform uses a commit-reveal protocol and signed liquidity attestations to keep quotes confidential until reveal (zero-knowledge proofs are on the roadmap).
 
 Learn more at [unleak.trade](https://unleak.trade).
 
 ## Documentation
 
-Complete workflow details and sequence diagrams will be available very soon.
+Interactive API documentation is served by the service itself: Swagger UI at `/doc` (also the target of `/`), OpenAPI spec at `/openapi.json`.
+
+### Flow
+
+1. `POST /register` with the wallet address, email and sponsor address. The service answers `202` with a `hash` and emails an activation link, `https://unleak.trade/activate/<token>`.
+2. The landing page calls `POST /activate/<token>/<hash>`. The token is a JWT valid for **10 minutes**. A successful activation answers `201` and, when the airdrop is enabled, embeds its status (see below).
+
+### Endpoints
+
+| Method and path | Access | Purpose |
+| --- | --- | --- |
+| `POST /register` | public | Start a registration |
+| `POST /activate/:token/:hash` | public | Activate a registration |
+| `GET /health` | public | Health check (`{"status":"ok"}`), used by the deploy |
+| `GET /doc`, `GET /swagger/*`, `GET /openapi.json` | public | API documentation |
+| `GET /check-wallet/:address` | `UNLK-API-KEY` header | Check whether a wallet is on the waitlist |
+| `GET /<p1>/<p2>/list` | `UNLK-API-KEY` header | List registrations (`offset`, `max`, `mime=csv`) |
+| `GET /<p1>/<p2>/airdrop/list` | `UNLK-API-KEY` header | List airdrop jobs |
+| `POST /<p1>/<p2>/airdrop/<address>/retry` | `UNLK-API-KEY` header | Re-arm a failed airdrop job |
+
+`<p1>/<p2>` are the two secret path segments from `UNLEAKTRADE_API_SECURE_PATH1` / `UNLEAKTRADE_API_SECURE_PATH2`. All routes are rate limited per client IP (0.1 request per second sustained, burst of 10) and served with permissive CORS.
+
+### Service configuration
+
+| Env var | Required | Purpose |
+| --- | --- | --- |
+| `UNLEAKTRADE_ENCRYPTION_KEY` | **yes** | Encryption key; the service panics at boot without it |
+| `UNLEAKTRADE_API_SECURE_PATH1`, `UNLEAKTRADE_API_SECURE_PATH2` | **yes** | Secret path segments of the operator routes |
+| `UNLEAKTRADE_WAITLIST_API_KEY` | **yes** | Expected value of the `UNLK-API-KEY` header |
+| `UNLEAKTRADE_WAITLIST_TABLE_NAME` | no | DynamoDB table, defaults to `Waitlist` |
+| `UNLEAKTRADE_MAIL_USER`, `UNLEAKTRADE_MAIL_PASSWORD` | no | Mailtrap SMTP credentials for the activation email |
+| `PORT` | no | Listen port, defaults to `8080` |
+
+AWS credentials and region come from the default AWS SDK chain. The airdrop variables are listed in the next section.
+
+### Local development
+
+```sh
+make run     # build and start ./bin/api
+make build
+make test    # go test ./... (live DynamoDB / Mailtrap tests skip without credentials)
+```
 
 ## Unleak USDC (uUSDC) Airdrop
 
@@ -41,12 +82,12 @@ Key properties:
 
 | Env var | Behavior |
 | --- | --- |
-| `UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY` | solana-keygen JSON array of the authority keypair. Missing/invalid → service boots with distribution **disabled** (loud `🚨` log), activation unaffected. |
+| `UNLEAKTRADE_DISTRIBUTION_AUTHORITY_KEY` | solana-keygen JSON array of the authority keypair. Missing, unparsable, or not matching the expected authority pubkey → service boots with distribution **disabled** (loud `🚨` log), activation unaffected. |
 | `UNLEAKTRADE_SOLANA_RPC_URL` | defaults to `https://api.devnet.solana.com` |
 | `UNLEAKTRADE_AIRDROP_TABLE_NAME` | defaults to `Airdrop` (DynamoDB, partition key `address` (S)) |
 | `UNLEAKTRADE_AIRDROP_ENABLED` | defaults to `true`; `false` disables enqueueing, the worker, and the `airdrop` response key |
 
-The service persists jobs in DynamoDB: table `Airdrop` in production and `Airdrop_TEST` for the live test suite (same schema, partition key `address` (S), on-demand billing).
+The service persists jobs in DynamoDB: table `Airdrop` in production and `Airdrop_TEST` for the live test suite (same schema, partition key `address` (S), on-demand billing). The registration tests use `Waitlist_TEST` the same way.
 
 Deploys are currently manual (`workflow_dispatch`), so config vars are set directly on the Heroku app:
 
@@ -56,7 +97,7 @@ heroku config:set UNLEAKTRADE_AIRDROP_TABLE_NAME="Airdrop" -a unleaktrade-waitli
 heroku config:set UNLEAKTRADE_SOLANA_RPC_URL="https://api.devnet.solana.com" -a unleaktrade-waitlist  # optional, default
 ```
 
-The GitHub workflow deliberately does **not** manage config vars (empty secrets would overwrite live values with blanks); it only tests and, on manual dispatch from `main`, pushes the code to Heroku. That deploy job needs one repo secret:
+The GitHub workflow deliberately does **not** manage config vars (empty secrets would overwrite live values with blanks); it only tests (`go vet`, `go test -race` with coverage, on every push and pull request to `main`) and, on manual dispatch from `main`, pushes the code to Heroku. That deploy job needs one repo secret:
 
 ```sh
 gh secret set HEROKU_API_KEY --repo unleaktrade/waitlist --body "$(heroku auth:token)"
@@ -74,8 +115,8 @@ Live tests (DynamoDB `*_TEST` tables, Mailtrap sandbox) skip when credentials ar
 
 ## Technology Stack
 
-- **Language**: Go (94.3%)
-- **Deployment**: Heroku
+- **Language**: Go 1.25 (Gin, AWS SDK for Go with DynamoDB, `gagliardetto/solana-go`)
+- **Deployment**: Heroku (`Procfile`: `web: ./bin/api`)
 - **License**: MIT
 
 ## Contributing
